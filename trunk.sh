@@ -181,6 +181,10 @@ cd $HOME/chromium/src/third_party/devtools-frontend/src &&
 
 git checkout -f origin/main &&
 
+cd $HOME/chromium/src/third_party/ffmpeg &&
+	
+git checkout -f origin/master &&
+
 cd $HOME/chromium/src &&
 
 rm -v -f $HOME/chromium/src/components/neterror/resources/images/default_100_percent/offline/favicon-16x16.png &&
