@@ -579,23 +579,6 @@ void WASAPIAudioInputStream::Stop() {
     }
   }
 
-  absl::optional<VolumeRange> volume_range;
-  if (add_uma_histogram && system_audio_volume_ &&
-      !AudioDeviceDescription::IsLoopbackDevice(device_id_)) {
-    VolumeRange range;
-    HRESULT hr = system_audio_volume_->GetVolumeRange(
-        &range.min_volume_db, &range.max_volume_db, &range.volume_step_db);
-    if (FAILED(hr)) {
-      SendLogMessage("%s => (ERROR: IAudioEndpointVolume::GetVolumeRange=[%s])",
-                     __func__, ErrorToString(hr).c_str());
-    } else {
-      SendLogMessage("%s => (IAudioEndpointVolume::GetVolumeRange) %f %f %f",
-                     __func__, range.min_volume_db, range.max_volume_db,
-                     range.volume_step_db);
-      volume_range = range;
-    }
-  }
-
   // Stops periodic AGC microphone measurements.
   StopAgc();
 
@@ -624,7 +607,6 @@ void WASAPIAudioInputStream::Stop() {
     base::UmaHistogramBoolean("Media.Audio.InputVolumeStartsAtZeroWin",
                               audio_session_starts_at_zero_volume_);
     audio_session_starts_at_zero_volume_ = false;
-    LogVolumeRangeUmaHistograms(volume_range);
   }
 
   SendLogMessage(
