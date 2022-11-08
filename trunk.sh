@@ -42,7 +42,7 @@ gsyncShallow () {
 	
 	cd $HOME/chromium/src/third_party/ffmpeg &&
 	
-	git checkout -f origin/main &&
+	git checkout -f origin/master &&
 
 	cd $HOME/chromium/src &&
 	
