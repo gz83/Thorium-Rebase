@@ -552,6 +552,13 @@ config("compiler") {
       }
     }
 
+    # TODO(crbug.com/1235145): Investigate why/if this should be needed.
+    if (is_win) {
+      cflags += [ "/clang:-ffp-contract=off" ]
+    } else {
+      cflags += [ "-ffp-contract=off" ]
+    }
+
     if (default_toolchain != "//build/toolchain/cros:target") {
       # TODO(crbug.com/1361629): Fix the compiler so this is not needed.
       cflags += [
