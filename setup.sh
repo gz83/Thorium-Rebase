@@ -150,8 +150,6 @@ export EDITOR=nano &&
 
 export VISUAL=nano &&
 
-alias origin='git checkout -f origin/main' &&
-
 alias gfetch='git fetch --tags' &&
 
 alias rebase='git rebase-update' &&
@@ -180,8 +178,6 @@ printf "export ${CYA}EDITOR=nano${c0}\n" &&
 
 printf "export ${CYA}VISUAL=nano${c0}\n" &&
 printf "\n" &&
-
-printf "alias ${YEL}origin${c0} = ${CYA}git checkout -f origin/main${c0}\n" &&
 
 printf "alias ${YEL}gfetch${c0} = ${CYA}git fetch --tags${c0}\n" &&
 
