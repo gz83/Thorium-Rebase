@@ -1939,8 +1939,8 @@ are declared in tools/grit/grit_rule.gni.
         desc="Message shown in the download shelf when a download is being scanned for an Advanced Protection user">
         <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> is being scanned.
       </message>
-      <message name="IDS_PROMPT_CONFIRM_MIXED_CONTENT_DOWNLOAD"
-        desc="Message shown to the user to validate the download when the download content is a mixed-content download.">
+      <message name="IDS_PROMPT_CONFIRM_INSECURE_DOWNLOAD"
+        desc="Message shown to the user to validate the download when the download content is an insecure download.">
         <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> can't be downloaded securely
       </message>
       <message name="IDS_PROMPT_DOWNLOAD_BLOCKED_TOO_LARGE"
@@ -1967,12 +1967,12 @@ are declared in tools/grit/grit_rule.gni.
         desc="Message shown in the download shelf when a download is finished being scanned, and issues were found">
         This file is dangerous
       </message>
-      <message name="IDS_PROMPT_DOWNLOAD_MIXED_CONTENT_WARNING"
-        desc="Message shown in the download shelf when a download is mixed content, and Thorium needs to show a warning.">
+      <message name="IDS_PROMPT_DOWNLOAD_INSECURE_WARNING"
+        desc="Message shown in the download shelf when a download is insecure, and Thorium needs to show a warning.">
         <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> can't be downloaded securely
       </message>
-      <message name="IDS_PROMPT_DOWNLOAD_MIXED_CONTENT_BLOCKED"
-        desc="Message shown in the download shelf when a download is mixed content, and Thorium has blocked it.">
+      <message name="IDS_PROMPT_DOWNLOAD_INSECURE_BLOCKED"
+        desc="Message shown in the download shelf when a download is insecure, and Thorium has blocked it.">
         <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> can't be downloaded securely
       </message>
       <message name="IDS_PROMPT_APP_DEEP_SCANNING"
@@ -1995,8 +1995,8 @@ are declared in tools/grit/grit_rule.gni.
          desc="Message shown to the user on chrome://downloads page to explain that this download is blocked because it may be dangerous.">
         This type of file may harm your computer.
       </message>
-      <message name="IDS_BLOCK_REASON_MIXED_CONTENT"
-         desc="Message shown to the user on chrome://downloads page to explain that this download is blocked because it is mixed-content.">
+      <message name="IDS_BLOCK_REASON_INSECURE_DOWNLOAD"
+         desc="Message shown to the user on chrome://downloads page to explain that this download is blocked because it was insecurely delivered.">
         This file can't be downloaded securely
       </message>
       <message name="IDS_BLOCK_REASON_DEEP_SCANNING"
@@ -2029,7 +2029,7 @@ are declared in tools/grit/grit_rule.gni.
       </message>
 
       <if expr="is_chromeos">
-        <message name="IDS_PROMPT_BLOCKED_MIXED_DOWNLOAD_TITLE"
+        <message name="IDS_PROMPT_BLOCKED_INSECURE_DOWNLOAD_TITLE"
                  desc="In the download notification, a title of the message shown on a download blocked for being insecure.">
           Insecure download blocked
         </message>
@@ -2289,19 +2289,19 @@ are declared in tools/grit/grit_rule.gni.
         </else>
       </if>
       <message name="IDS_DEEP_SCANNING_ACCESSIBLE_ALERT"
-               desc="The title of a download notification inidcating that the file may be malicious, and the Advanced Protection Program recommends sending the file to Google. This message is for screen reader users">
+               desc="The title of a download notification indicating that the file may be malicious, and the Advanced Protection Program recommends sending the file to Google. This message is for screen reader users">
         <ph name="FILE_NAME">$1<ex>file.exe</ex></ph> is being scanned.
       </message>
       <if expr="is_macosx">
         <then>
-          <message name="IDS_PROMPT_DOWNLOAD_MIXED_CONTENT_BLOCKED_ACCESSIBLE_ALERT"
-                   desc="The title of a download notification inidcating that the download was delivered insecurely. This message is for screen reader users">
+          <message name="IDS_PROMPT_DOWNLOAD_INSECURE_BLOCKED_ACCESSIBLE_ALERT"
+                   desc="The title of a download notification indicating that the download was delivered insecurely. This message is for screen reader users">
             <ph name="FILE_NAME">$1<ex>file.exe</ex></ph> can't be downloaded securely.
           </message>
         </then>
         <else>
-          <message name="IDS_PROMPT_DOWNLOAD_MIXED_CONTENT_BLOCKED_ACCESSIBLE_ALERT"
-                   desc="The title of a download notification inidcating that the download was delivered insecurely. This message is for screen reader users">
+          <message name="IDS_PROMPT_DOWNLOAD_INSECURE_BLOCKED_ACCESSIBLE_ALERT"
+                   desc="The title of a download notification indicating that the download was delivered insecurely. This message is for screen reader users">
             <ph name="FILE_NAME">$1<ex>file.exe</ex></ph> can't be downloaded securely. Press Shift+F6 to cycle to the downloads bar area.
           </message>
         </else>
@@ -2378,8 +2378,8 @@ are declared in tools/grit/grit_rule.gni.
                    desc="Download context menu: Show information about interrupted downloads">
             &amp;More information
           </message>
-          <message name="IDS_DOWNLOAD_MENU_LEARN_MORE_MIXED_CONTENT"
-                   desc="Download context menu: Show information about mixed content downloads">
+          <message name="IDS_DOWNLOAD_MENU_LEARN_MORE_INSECURE"
+                   desc="Download context menu: Show information about insecure downloads">
             &amp;Learn more
           </message>
         </if>
@@ -2446,8 +2446,8 @@ are declared in tools/grit/grit_rule.gni.
                    desc="In Title Case: Download context menu: Show information about interrupted downloads">
             &amp;More Information
           </message>
-          <message name="IDS_DOWNLOAD_MENU_LEARN_MORE_MIXED_CONTENT"
-                   desc="In Title Case: Download context menu: Show information about mixed content downloads">
+          <message name="IDS_DOWNLOAD_MENU_LEARN_MORE_INSECURE"
+                   desc="In Title Case: Download context menu: Show information about insecure downloads">
             &amp;Learn More
           </message>
         </if>  <!-- not use_titlecase -->
@@ -2594,6 +2594,10 @@ are declared in tools/grit/grit_rule.gni.
       <message name="IDS_DOWNLOAD_BUBBLE_DELETE"
                desc="Label for the Delete button on the blocked download bubble subpage.">
         Delete
+      </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_MAIN_BUTTON_SUBPAGE"
+               desc="Accessibility label for the main button on the download bubble main page. It opens the bubble subpage when activated.">
+        <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> <ph name="STATUS">$2<ex>blocked dangerous</ex></ph> more details
       </message>
       <message name="IDS_DOWNLOAD_BUBBLE_RESUME"
                desc="Label for the button prompting to resume a paused download">
@@ -2799,6 +2803,18 @@ are declared in tools/grit/grit_rule.gni.
             </message>
           </if>
       </if>
+      <if expr="not use_titlecase">
+          <message name="IDS_DOWNLOAD_BUBBLE_BACK_RECENT_DOWNLOADS"
+            desc="Accessibility/tooltip label for returning to recent downloads">
+            Back to recent downloads
+          </message>
+        </if>
+        <if expr="use_titlecase">
+          <message name="IDS_DOWNLOAD_BUBBLE_BACK_RECENT_DOWNLOADS"
+            desc="In Title Case: Accessibility/tooltip label for returning to recent downloads">
+            Back to Recent Downloads
+          </message>
+        </if>
 
       <!-- Tailored Warning in Download Bubble -->
       <message name="IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_COOKIE_THEFT"
@@ -3938,6 +3954,22 @@ are declared in tools/grit/grit_rule.gni.
        Switch to captured tab
       </message>
 
+      <!-- Tab casting infobar -->
+      <message name="IDS_TAB_CASTING_INFOBAR_CASTING_CURRENT_TAB_LABEL" desc="Text displayed on an infobar when current tab is being casted.">
+       Casting this tab
+      </message>
+      <message name="IDS_TAB_CASTING_INFOBAR_CASTING_ANOTHER_UNTITLED_TAB_LABEL" desc="Text displayed on an infobar when another (non-current) untitled tab is being casted.">
+       Casting a tab
+      </message>
+      <message name="IDS_TAB_CASTING_INFOBAR_CASTING_ANOTHER_TAB_LABEL" desc="Text displayed on an infobar when another (non-current) tab is being shacastedred.">
+       Casting <ph name="TAB_NAME">$1<ex>youtube.com</ex></ph>
+      </message>
+      <message name="IDS_TAB_CASTING_INFOBAR_CAST_BUTTON" desc="Text displayed on the button to cast current tab.">
+       Cast this tab instead
+      </message>
+      <message name="IDS_TAB_CASTING_INFOBAR_STOP_BUTTON" desc="Text displayed on the button to stop casting a tab.">
+       Stop casting
+      </message>
 
       <!-- Task Manager Window -->
       <if expr="not is_android">
@@ -5504,6 +5536,24 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
       <!-- End Force Installed Deprecated Apps Deletion Dialog strings. -->
+      <!-- Force Installed Preinstalled Deprecated Apps Deletion Dialog strings. -->
+      <message name="IDS_FORCE_INSTALLED_PREINSTALLED_DEPRECATED_APPS_TITLE" desc="Title of the force installed deprecated app dialog, prompting the user to contact their organization's administrator.">
+        Ask your admin to update this app
+      </message>
+      <message name="IDS_FORCE_INSTALLED_PREINSTALLED_DEPRECATED_APPS_CONTENT" desc="Content of the force installed preinstalled deprecated app dialog">
+        Chrome Apps are migrating to Progressive Web Apps. This Chrome App was installed on your browser by your organization. To open the Progressive Web App from the Apps list, first contact your administrator and ask them to uninstall the Chrome App. In the meantime, you can visit <ph name="EXTENSION_LAUNCH_URL">$1<ex>sheets.google.com</ex></ph> to open <ph name="EXTENSION_NAME">$2<ex>Google Sheets</ex></ph> on the web.
+      </message>
+      <if expr="use_titlecase">
+        <message name="IDS_FORCE_INSTALLED_PREINSTALLED_DEPRECATED_APPS_GO_TO_SITE_BUTTON" desc="Label for the button that opens the website for the app">
+          Go To Site
+        </message>
+      </if>
+        <if expr="not use_titlecase">
+        <message name="IDS_FORCE_INSTALLED_PREINSTALLED_DEPRECATED_APPS_GO_TO_SITE_BUTTON" desc="Label for the button that opens the website for the app">
+          Go to site
+        </message>
+      </if>
+      <!-- End Force Installed Preinstalled Deprecated Apps Deletion Dialog strings. -->
       <!-- Deprecated Apps Deletion Dialog strings. -->
       <message name="IDS_DEPRECATED_APPS_RENDERER_TITLE_PLURAL" desc="The title of the deprecated app dialog">
         <ph name="APPS">$1<ex>2</ex></ph> apps are no longer supported
@@ -6596,6 +6646,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_NTP_DOODLE_SHARE_DIALOG_LINK_LABEL" desc="The text label for the share link text area on the doodle sharing dialog.">
         Doodle Link
       </message>
+      <message name="IDS_NTP_CUSTOMIZE_APPEARANCE_LABEL" desc="The label for the option to edit appearance in the Customize Chrome side panel.">
+        Appearance
+      </message>
       <message name="IDS_NTP_CUSTOMIZE_MENU_BACKGROUND_LABEL" desc="The label for the backgrounds option in the customization menu on the New Tab Page.">
         Background
       </message>
@@ -7088,11 +7141,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
 
-      <!-- Bookmarks menu -->
-      <message name="IDS_BOOKMARK_FOLDER_CHILD_COUNT" desc="Text description for the number of children of a bookmark folder">
-        {NUM_BOOKMARKS, plural, =1 {1 bookmark} other {# bookmarks}}
-      </message>
-
       <!-- Read Later button and menu -->
       <if expr="use_titlecase">
         <message name="IDS_READ_LATER_TITLE" desc="Title of the Read later menu">
@@ -7215,6 +7263,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_BOOKMARKS_EMPTY_STATE_BODY" desc="Body text for the bookmarks side panel empty state">
         Bookmark things you want to come back to later
+      </message>
+      <message name="IDS_BOOKMARK_FOLDER_CHILD_COUNT" desc="Text description for the number of children of a bookmark folder">
+        {NUM_BOOKMARKS, plural, =1 {1 bookmark} other {# bookmarks}}
       </message>
 
       <!-- Read Anything strings -->
@@ -8478,6 +8529,12 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Google 
       <message name="IDS_PICTURE_IN_PICTURE_PREVIOUS_TRACK_CONTROL_ACCESSIBLE_TEXT" desc="Accessible text label used for the controls button in the Picture-in-Picture window. The button invokes previous track action.">
         Previous track
       </message>
+      <message name="IDS_PICTURE_IN_PICTURE_PREVIOUS_SLIDE_CONTROL_ACCESSIBLE_TEXT" desc="Accessible text label used for the controls button in the Picture-in-Picture window. The button invokes previous slide action.">
+        Previous slide
+      </message>
+      <message name="IDS_PICTURE_IN_PICTURE_NEXT_SLIDE_CONTROL_ACCESSIBLE_TEXT" desc="Accessible text label used for the controls button in the Picture-in-Picture window. The button invokes next slide action.">
+        Next slide
+      </message>
 
       <!-- Load State -->
       <message name="IDS_LOAD_STATE_WAITING_FOR_SOCKET_SLOT" desc="Status text when Thorium is at its connection limit, and is waiting for a URL request to complete to free up a connection.">
@@ -8819,6 +8876,9 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Google 
       </if>
 
       <!-- Tab Group Editor Bubble -->
+      <message name="IDS_TAB_GROUP_HEADER_CXMENU_TAB_GROUP_TITLE_ACCESSIBLE_NAME" desc="The accessible name of the tab-group-title textfield.">
+          Tab-group title
+      </message>
       <if expr="not use_titlecase">
         <message name="IDS_TAB_GROUP_HEADER_CXMENU_SAVE_GROUP" desc="The label of the tab group header context menu item for saving the current group.">
           Save group
@@ -11545,8 +11605,11 @@ Please help our engineers fix this problem. Tell us what happened right before y
         <message name="IDS_MIC_TURNED_OFF_IN_MACOS" desc="Title for the media status bubble that is used when a site requests microphone access, but microphone is blocked on an OS level in macOS.">
           Microphone is turned off in Mac System Preferences
         </message>
-        <message name="IDS_OPEN_PREFERENCES_LINK" desc="Title for the button that takes the user to the Security and Privacy settings in macOS, in order for the user to be able to modify the ability to access camera and microphone for Thorium.">
+        <message name="IDS_OPEN_PREFERENCES_LINK" desc="Title for the button that takes the user to the Security and Privacy settings in macOS, in order for the user to be able to modify the ability to access camera and microphone for Thorium. System Preferences was renamed to System Settings in macOS 13 so this string shouldn't be used past macOS 12.">
           Open Preferences
+        </message>
+        <message name="IDS_OPEN_SETTINGS_LINK" desc="Title for the button that takes the user to System Settings in macOS >= 13. The translation for this string should match the translation of the System Settings app title in the macOS target locale. You can find this by selecting the locale from https://support.apple.com/guide/mac-help/mh15217/mac/localeselector. The title of the next page after that includes the desired translation. Note that, for size reasons, the English string omits 'System' and the same contraction may be suitable in other languages.">
+          Open Settings
         </message>
         <message name="IDS_CAMERA" desc="Description text for the camera.">
           Camera
@@ -12322,6 +12385,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_DEVICE_LOG_TYPE_CAMERA" desc="Checkbox to enable showing events of type Camera">
         Camera
       </message>
+      <message name="IDS_DEVICE_LOG_TYPE_GEOLOCATION" desc="Checkbox to enable showing events of type Geolocation">
+        Geolocation
+      </message>
       <message name="IDS_DEVICE_LOG_FILEINFO" desc="File info checkbox in device event log">
         File Info
       </message>
@@ -12341,6 +12407,16 @@ Please help our engineers fix this problem. Tell us what happened right before y
     <message name="IDS_WEBUSB_DEVICE_DETECTED_NOTIFICATION_TITLE" desc="Title for notification shown to the user when a USB device gets plugged in.">
       <ph name="USB_DEVICE_NAME">$1<ex>Nexus 5</ex></ph> detected
     </message>
+
+    <if expr="not is_android">
+      <!-- WebHID Notification -->
+      <message name="IDS_WEBHID_DEVICE_CONNECTED_BY_EXTENSION_NOTIFICATION_TITLE" desc="Notification title shown to the user when a HID device is being accessed by an extension.">
+        An extension is using a HID device
+      </message>
+      <message name="IDS_WEBHID_DEVICE_CONNECTED_BY_EXTENSION_NOTIFICATION_MESSAGE" desc="Notification content shown to the user when a HID device is being accessed by an extension.">
+        Click to manage permissions for "<ph name="EXTENSION">$1<ex>Google Translate</ex></ph>"
+      </message>
+    </if>
 
     <if expr="chromeos_ash">
       <!-- CrOSUsb Notification -->
@@ -13520,6 +13596,11 @@ Please help our engineers fix this problem. Tell us what happened right before y
     </message>
     <message name="IDS_DEEP_SCANNING_TIMED_OUT_DIALOG_OPEN_NOW_BUTTON" desc="The text on the open now button in tab modal dialog when deep scanning times out.">
       Open now
+    </message>
+
+    <!-- In product help bubble dialog for users referred from ESB promotions -->
+    <message name="IDS_SETTINGS_SAFEBROWSING_ENHANCED_IPH_BUBBLE_TEXT" desc="The text on an In-Product-Help bubble that is shown when a user navigates to the security settings page from an ESB promotion">
+      Get more protection against dangerous websites and downloads
     </message>
 
     <!-- Tailored security dialog for consented primary accounts -->
