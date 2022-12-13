@@ -2152,7 +2152,7 @@ config("optimize") {
     # vectorization while otherwise optimizing for size.
     rustflags = [ "-Copt-level=3" ]
   } else {
-    cflags = [ "-O2" ] + common_optimize_on_cflags
+    cflags = [ "-O3" ] + common_optimize_on_cflags
 
     # The `-O3` for clang turns on extra optimizations compared to the standard
     # `-O2`. But for rust, `-Copt-level=3` is the default and is thus reliable
