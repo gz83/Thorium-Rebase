@@ -1516,6 +1516,7 @@ if (current_toolchain == default_toolchain) {
       "//base/test:test_support_java",
       "//cc:cc_java",
       "//chrome/android:chrome_java",
+      "//chrome/android/features/keyboard_accessory/public:public_java",
       "//chrome/android/features/start_surface:java_resources",
       "//chrome/android/features/start_surface:public_java",
       "//chrome/android/features/tab_ui:java",
@@ -2384,6 +2385,7 @@ if (current_toolchain == default_toolchain) {
       "//components/external_intents/android:test_support_java",
       "//components/minidump_uploader:minidump_uploader_java",
       "//components/paint_preview/player/android:player_java_test_support",
+      "//components/variations/android:test_support_java",
       "//content/public/test/android:content_java_test_support",
       "//ui/android:clipboard_java_test_support",
     ]
@@ -2528,13 +2530,6 @@ if (current_toolchain == default_toolchain) {
       android_manifest_dep = ":chrome_public_android_manifest"
 
       shared_libraries = [ ":libchrome" ]
-
-      # Native libraries can be loaded directly from the APK using the
-      # Chromium linker. However, we disable this for J-K due to an OEM-specific
-      # platform bug, where overzealous SELinux settings prevent mapping some apk
-      # file segments with PROT_EXEC (see http://crbug.com/398425). This was
-      # fixed for Android L by adding proper CTS tests.
-      load_library_from_apk = chromium_linker_supported
 
       version_name = chrome_version_name
     }
@@ -3177,6 +3172,7 @@ if (current_toolchain == default_toolchain) {
       "//components/strictmode/android:unit_device_javatests",
       "//components/translate/content/android:unit_device_javatests",
       "//components/url_formatter/android:unit_device_javatests",
+      "//components/variations/android:unit_device_javatests",
       "//ui/android:ui_unit_device_javatests",
     ]
 
@@ -4281,6 +4277,7 @@ chrome_common_shared_library("libchromefortest") {
     "//components/minidump_uploader",
     "//components/paint_preview/player/android:test_support",
     "//components/sync",
+    "//components/variations/android:test_support",
     "//content/public/test/android:content_native_test_support",
     "//content/test:test_support",
     "//ui/base/clipboard:clipboard_test_support",
