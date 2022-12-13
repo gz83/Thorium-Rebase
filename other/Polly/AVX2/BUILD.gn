@@ -893,7 +893,7 @@ config("compiler") {
     rustflags += [ "-Cembed-bitcode=no" ]
   }
   if (is_official_build) {
-    rustflags += [ "-Ccodegen-units=1", "-Copt-level=3", "-Ctarget-feature=+aes,+avx,+avx2", ]
+    rustflags += [ "-Ccodegen-units=1", "-Copt-level=3", "-Ctarget-cpu=haswell", "-Ctarget-feature=+aes,+vaes,+avx,+avx2", ]
   }
 }
 
@@ -905,6 +905,7 @@ config("thinlto_optimize_default") {
 
     if (is_win) {
       ldflags = [ "/opt:lldlto=" + lto_opt_level ]
+      ldflags += [ "-mllvm:-enable-pre=false" ]
     } else {
       ldflags = [ "-Wl,--lto-O" + lto_opt_level ]
     }
@@ -2330,14 +2331,14 @@ config("optimize") {
 
     # Similar to clang, we optimize with `-Copt-level=s` to keep loop
     # vectorization while otherwise optimizing for size.
-    rustflags = [ "-Copt-level=3", "-Ctarget-feature=+aes,+avx,+avx2", ]
+    rustflags = [ "-Copt-level=3", "-Ctarget-cpu=haswell", "-Ctarget-feature=+aes,+vaes,+avx,+avx2", ]
   } else {
     cflags = [ "-O3" ] + common_optimize_on_cflags
 
     # The `-O3` for clang turns on extra optimizations compared to the standard
     # `-O2`. But for rust, `-Copt-level=3` is the default and is thus reliable
     # to use.
-    rustflags = [ "-Copt-level=3", "-Ctarget-feature=+aes,+avx,+avx2", ]
+    rustflags = [ "-Copt-level=3", "-Ctarget-cpu=haswell", "-Ctarget-feature=+aes,+vaes,+avx,+avx2", ]
   }
   ldflags = common_optimize_on_ldflags
 }
@@ -2405,7 +2406,7 @@ config("optimize_max") {
     } else {
       cflags = [ "-O3" ] + common_optimize_on_cflags
     }
-    rustflags = [ "-Copt-level=3", "-Ctarget-feature=+aes,+avx,+avx2", ]
+    rustflags = [ "-Copt-level=3", "-Ctarget-cpu=haswell", "-Ctarget-feature=+aes,+vaes,+avx,+avx2", ]
   }
 }
 
@@ -2438,7 +2439,7 @@ config("optimize_speed") {
     } else {
       cflags = [ "-O3" ] + common_optimize_on_cflags
     }
-    rustflags = [ "-Copt-level=3", "-Ctarget-feature=+aes,+avx,+avx2", ]
+    rustflags = [ "-Copt-level=3", "-Ctarget-cpu=haswell", "-Ctarget-feature=+aes,+vaes,+avx,+avx2", ]
   }
 }
 
@@ -2581,7 +2582,7 @@ config("symbols") {
       cflags += [ "-gcodeview-ghash" ]
       ldflags = [ "/DEBUG:GHASH" ]
     } else {
-      ldflags = [ "/DEBUG" ]
+      ldflags = [ "/DEBUG:NONE" ]
     }
 
     # All configs using /DEBUG should include this:
@@ -2694,7 +2695,7 @@ config("symbols") {
       ]
     }
   }
-  rustflags = [ "-g", "-Copt-level=3", "-Ctarget-feature=+aes,+avx,+avx2", ]
+  rustflags = [ "-g", "-Copt-level=3", "-Ctarget-cpu=haswell", "-Ctarget-feature=+aes,+vaes,+avx,+avx2", ]
 }
 
 # Minimal symbols.
@@ -2709,7 +2710,7 @@ config("minimal_symbols") {
       cflags += [ "-gcodeview-ghash" ]
       ldflags = [ "/DEBUG:GHASH" ]
     } else {
-      ldflags = [ "/DEBUG" ]
+      ldflags = [ "/DEBUG:NONE" ]
     }
 
     # All configs using /DEBUG should include this:
@@ -2767,7 +2768,7 @@ config("minimal_symbols") {
 
     asmflags = cflags
   }
-  rustflags = [ "-Cdebuginfo=1", "-Copt-level=3", "-Ctarget-feature=+aes,+avx,+avx2", ]
+  rustflags = [ "-Cdebuginfo=1", "-Copt-level=3", "-Ctarget-cpu=haswell", "-Ctarget-feature=+aes,+vaes,+avx,+avx2", ]
 }
 
 # This configuration contains function names only. That is, the compiler is
