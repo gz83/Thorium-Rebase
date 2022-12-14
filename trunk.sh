@@ -32,6 +32,8 @@ gsyncShallow () {
 	printf "${YEL}Rebasing/Syncing (with a depth of 1) and running hooks...\n" &&
 	tput sgr0 &&
 	
+    cd $HOME/chromium/src &&
+
 	rm -v -f $HOME/chromium/src/components/neterror/resources/images/default_100_percent/offline/favicon-16x16.png &&
 	
 	rm -v -f $HOME/chromium/src/components/neterror/resources/images/default_200_percent/offline/favicon-32x32.png &&
@@ -87,6 +89,8 @@ gsyncShallow () {
 	rm -r -f -v	components/security_interstitials/content/cert_report_helper.cc.rej &&
 	rm -r -f -v	chrome/browser/safe_browsing/safe_browsing_dummy.cc &&
 	
+    git checkout -f origin/main &&
+
 	git rebase-update --current &&
 	
 	gclient sync -D --no-history --shallow &&
@@ -155,6 +159,8 @@ printf "\n" &&
 printf "${YEL}Rebasing/Syncing and running hooks...\n" &&
 tput sgr0 &&
 
+cd $HOME/chromium/src &&
+
 rm -v -f $HOME/chromium/src/components/neterror/resources/images/default_100_percent/offline/favicon-16x16.png &&
 
 rm -v -f $HOME/chromium/src/components/neterror/resources/images/default_200_percent/offline/favicon-32x32.png &&
@@ -209,6 +215,8 @@ rm -r -f -v	chrome/browser/ui/webui/interstitials/interstitial_ui.cc.rej &&
 rm -r -f -v	chrome/renderer/chrome_content_renderer_client.cc.rej &&
 rm -r -f -v	components/security_interstitials/content/cert_report_helper.cc.rej &&
 rm -r -f -v	chrome/browser/safe_browsing/safe_browsing_dummy.cc &&
+
+git checkout -f origin/main &&
 
 git rebase-update &&
 
