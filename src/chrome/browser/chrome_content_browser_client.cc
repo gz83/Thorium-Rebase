@@ -6308,6 +6308,18 @@ bool ChromeContentBrowserClient::HandleExternalProtocol(
                                      ? initiator_document->GetWeakDocumentPtr()
                                      : content::WeakDocumentPtr();
 
+#if BUILDFLAG(IS_ANDROID)
+  // For Android this is always called on the UI thread.
+  CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  // Called synchronously so we can populate the |out_factory| param.
+  LaunchURL(weak_factory_.GetWeakPtr(), url, std::move(web_contents_getter),
+            page_transition, is_primary_main_frame, is_in_fenced_frame_tree,
+            sandbox_flags, has_user_gesture, initiating_origin,
+            std::move(weak_initiator_document), out_factory);
+#else
+  // TODO(crbug.com/1394838): Figure out why this was initially made async, and,
+  // if possible, unify with the sync path above.
   content::GetUIThreadTaskRunner({})->PostTask(
       FROM_HERE,
       base::BindOnce(&LaunchURL, weak_factory_.GetWeakPtr(), url,
@@ -6315,6 +6327,7 @@ bool ChromeContentBrowserClient::HandleExternalProtocol(
                      is_primary_main_frame, is_in_fenced_frame_tree,
                      sandbox_flags, has_user_gesture, initiating_origin,
                      std::move(weak_initiator_document)));
+#endif
   return true;
 }
 
@@ -6334,8 +6347,8 @@ void ChromeContentBrowserClient::RegisterRendererPreferenceWatcher(
     content::BrowserContext* browser_context,
     mojo::PendingRemote<blink::mojom::RendererPreferenceWatcher> watcher) {
   Profile* profile = Profile::FromBrowserContext(browser_context);
-  PrefWatcher::Get(profile)->RegisterRendererPreferenceWatcher(
-      std::move(watcher));
+  if (PrefWatcher* pref_watcher = PrefWatcher::Get(profile))
+  pref_watcher->RegisterRendererPreferenceWatcher(std::move(watcher));
 }
 
 // Static; handles rewriting Web UI URLs.
@@ -6848,9 +6861,9 @@ void ChromeContentBrowserClient::IsClipboardPasteContentAllowed(
     auto fsd = std::make_unique<enterprise_connectors::FilesScanData>(paths);
     auto* fsd_ptr = fsd.get();
     fsd_ptr->ExpandPaths(base::BindOnce(&HandleExpandedPaths, std::move(fsd),
-                                        web_contents, std::move(dialog_data),
-                                        connector, std::move(paths),
-                                        std::move(callback)));
+                                        web_contents->GetWeakPtr(),
+                                        std::move(dialog_data), connector,
+                                        std::move(paths), std::move(callback)));
   } else {
     dialog_data.text.push_back(data);
     HandleStringData(web_contents, std::move(dialog_data), connector,
@@ -6915,8 +6928,15 @@ bool ChromeContentBrowserClient::
 bool ChromeContentBrowserClient::ShouldAllowInsecurePrivateNetworkRequests(
     content::BrowserContext* browser_context,
     const url::Origin& origin) {
-  return content_settings::ShouldAllowInsecurePrivateNetworkRequests(
-      HostContentSettingsMapFactory::GetForProfile(browser_context), origin);
+  // The host content settings map might no be null for some irregular profiles,
+  // e.g. the System Profile.
+if (HostContentSettingsMap* service =
+        HostContentSettingsMapFactory::GetForProfile(browser_context)) {
+  return content_settings::ShouldAllowInsecurePrivateNetworkRequests(service,
+                                                                     origin);                                                
+}
+
+return false;
 }
 
 bool ChromeContentBrowserClient::IsJitDisabledForSite(
@@ -6924,9 +6944,8 @@ bool ChromeContentBrowserClient::IsJitDisabledForSite(
     const GURL& site_url) {
   Profile* profile = Profile::FromBrowserContext(browser_context);
   auto* map = HostContentSettingsMapFactory::GetForProfile(profile);
-
   // Special case to determine if any policy is set.
-  if (site_url.is_empty()) {
+  if (map && site_url.is_empty()) {
     return map->GetDefaultContentSetting(ContentSettingsType::JAVASCRIPT_JIT,
                                          nullptr) == CONTENT_SETTING_BLOCK;
   }
@@ -6935,7 +6954,7 @@ bool ChromeContentBrowserClient::IsJitDisabledForSite(
   if (!site_url.SchemeIsHTTPOrHTTPS())
     return false;
 
-  return (map->GetContentSetting(site_url, site_url,
+  return (map && map->GetContentSetting(site_url, site_url,
                                  ContentSettingsType::JAVASCRIPT_JIT) ==
           CONTENT_SETTING_BLOCK);
 }
@@ -6993,17 +7012,17 @@ void ChromeContentBrowserClient::OnKeepaliveRequestFinished() {
 #if BUILDFLAG(IS_MAC)
 bool ChromeContentBrowserClient::SetupEmbedderSandboxParameters(
     sandbox::mojom::Sandbox sandbox_type,
-    sandbox::SeatbeltExecClient* client) {
+    sandbox::SandboxCompiler* compiler) {
   if (sandbox_type == sandbox::mojom::Sandbox::kSpeechRecognition) {
     base::FilePath soda_component_path = speech::GetSodaDirectory();
     CHECK(!soda_component_path.empty());
-    CHECK(client->SetParameter(sandbox::policy::kParamSodaComponentPath,
+    CHECK(compiler->SetParameter(sandbox::policy::kParamSodaComponentPath,
                                soda_component_path.value()));
 
     base::FilePath soda_language_pack_path =
         speech::GetSodaLanguagePacksDirectory();
     CHECK(!soda_language_pack_path.empty());
-    CHECK(client->SetParameter(sandbox::policy::kParamSodaLanguagePackPath,
+    CHECK(compiler->SetParameter(sandbox::policy::kParamSodaLanguagePackPath,
                                soda_language_pack_path.value()));
     return true;
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
@@ -7017,7 +7036,7 @@ bool ChromeContentBrowserClient::SetupEmbedderSandboxParameters(
       return false;
     }
 
-    CHECK(client->SetParameter(sandbox::policy::kParamScreenAiComponentPath,
+    CHECK(compiler->SetParameter(sandbox::policy::kParamScreenAiComponentPath,
                                screen_ai_component_dir.value()));
 
     return true;
@@ -7144,7 +7163,8 @@ bool ChromeContentBrowserClient::ShouldPreconnect(
   // at the start of navigation as part of the preloading holdback, so ignore
   // the Finch setting here.
   return prefetch::IsSomePreloadingEnabledIgnoringFinch(
-      *Profile::FromBrowserContext(browser_context)->GetPrefs());
+             *Profile::FromBrowserContext(browser_context)->GetPrefs()) ==
+         content::PreloadingEligibility::kEligible;
 }
 
 bool ChromeContentBrowserClient::ShouldPreconnectNavigation(
@@ -7170,7 +7190,7 @@ bool ChromeContentBrowserClient::WillProvidePublicFirstPartySets() {
          base::FeatureList::IsEnabled(features::kFirstPartySets);
 #else
   return false;
-#endif // BUILDFLAG(ENABLE_COMPONENT_UPDATER)
+#endif  // BUILDFLAG(ENABLE_COMPONENT_UPDATER)
 }
 
 content::mojom::AlternativeErrorPageOverrideInfoPtr
@@ -7179,18 +7199,40 @@ ChromeContentBrowserClient::GetAlternativeErrorPageOverrideInfo(
     content::RenderFrameHost* render_frame_host,
     content::BrowserContext* browser_context,
     int32_t error_code) {
-  if (error_code != net::ERR_INTERNET_DISCONNECTED)
-    return nullptr;
-
-  if (!base::FeatureList::IsEnabled(features::kPWAsDefaultOfflinePage))
-    return nullptr;
-
-  content::mojom::AlternativeErrorPageOverrideInfoPtr error_page =
-      web_app::GetOfflinePageInfo(url, render_frame_host, browser_context);
-  if (error_page)
+  if (base::FeatureList::IsEnabled(features::kPWAsDefaultOfflinePage) &&
+    error_code == net::ERR_INTERNET_DISCONNECTED) {
+  content::mojom::AlternativeErrorPageOverrideInfoPtr
+      alternative_error_page_override_info = web_app::GetOfflinePageInfo(
+          url, render_frame_host, browser_context);
+  if (alternative_error_page_override_info) {
+    // Use the alternative error page dictionary to override the error page.
+    alternative_error_page_override_info->alternative_error_page_params.Set(
+        error_page::kOverrideErrorPage, base::Value(true));
     web_app::TrackOfflinePageVisibility(render_frame_host);
+    return alternative_error_page_override_info;
+  }
+}
 
-  return error_page;
+// TODO(b/247618374): Lacros implementation
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+if (ash::features::IsCaptivePortalErrorPageEnabled()) {
+  auto alternative_error_page_override_info =
+      content::mojom::AlternativeErrorPageOverrideInfo::New();
+  // Use the alternative error page dictionary to provide additional
+  // suggestions in the default error page.
+  alternative_error_page_override_info->alternative_error_page_params.Set(
+      error_page::kOverrideErrorPage, base::Value(false));
+  bool is_portal_state =
+      ash::network_health::NetworkHealthManager::GetInstance()
+          ->helper()
+          ->IsPortalState();
+  alternative_error_page_override_info->alternative_error_page_params.Set(
+      error_page::kIsPortalStateKey, base::Value(is_portal_state));
+  return alternative_error_page_override_info;
+}
+#endif
+
+    return nullptr;
 }
 
 bool ChromeContentBrowserClient::OpenExternally(
