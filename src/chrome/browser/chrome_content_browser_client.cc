@@ -1921,7 +1921,7 @@ bool ChromeContentBrowserClient::
   if (ChromeContentBrowserClientExtensionsPart::AreExtensionsDisabledForProfile(
         browser_context)) {
   return true;
-}
+  }
 
   return ChromeContentBrowserClientExtensionsPart::
       ShouldCompareEffectiveURLsForSiteInstanceSelection(
@@ -2091,7 +2091,7 @@ void ChromeContentBrowserClient::OverrideURLLoaderFactoryParams(
         browser_context)) {
     return;
   }
-  
+
   ChromeContentBrowserClientExtensionsPart::OverrideURLLoaderFactoryParams(
       browser_context, origin, is_for_isolated_world, factory_params);
 #endif
@@ -2273,7 +2273,7 @@ ChromeContentBrowserClient::GetPermissionsPolicyForIsolatedWebApp(
 
   Profile* profile = Profile::FromBrowserContext(browser_context);
   auto& registrar =
-      web_app::WebAppProvider::GetForWebApps(profile)->registrar();
+      web_app::WebAppProvider::GetForWebApps(profile)->registrar_unsafe();
   std::vector<web_app::AppId> app_ids_for_origin =
       registrar.FindAppsInScope(app_origin.GetURL());
   if (app_ids_for_origin.empty()) {
@@ -2447,6 +2447,11 @@ bool ChromeContentBrowserClient::IsIsolatedContextAllowedForUrl(
     content::BrowserContext* browser_context,
     const GURL& lock_url) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
+  if (ChromeContentBrowserClientExtensionsPart::AreExtensionsDisabledForProfile(
+          browser_context)) {
+    return false;
+  }
+
   // Allow restricted context APIs in Chrome Apps.
   auto* extension = extensions::ExtensionRegistry::Get(browser_context)
                         ->enabled_extensions()
@@ -2455,14 +2460,6 @@ bool ChromeContentBrowserClient::IsIsolatedContextAllowedForUrl(
 #else
   return false;
 #endif
-}
-
-bool ChromeContentBrowserClient::IsIsolatedWebAppsDeveloperModeAllowed(
-    content::BrowserContext* context) {
-  Profile* profile = Profile::FromBrowserContext(context);
-  return profile &&
-         profile->GetPrefs()->GetBoolean(
-             policy::policy_prefs::kIsolatedAppsDeveloperModeAllowed);
 }
 
 bool ChromeContentBrowserClient::IsGetDisplayMediaSetSelectAllScreensAllowed(
@@ -2598,22 +2595,20 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   // Pass startup and post-login parameter FDs to child processes in Lacros.
-  if (process_type != switches::kZygoteProcess)
-  {
+  if (process_type != switches::kZygoteProcess) {
     constexpr int kStartupDataFD =
         kCrosStartupDataDescriptor + base::GlobalDescriptors::kBaseDescriptor;
     command_line->AppendSwitchASCII(chromeos::switches::kCrosStartupDataFD,
                                     base::NumberToString(kStartupDataFD));
 
-    if (chromeos::IsLaunchedWithPostLoginParams())
-    {
+    if (chromeos::IsLaunchedWithPostLoginParams()) {
     constexpr int kPostLoginDataFD = kCrosPostLoginDataDescriptor +
                                      base::GlobalDescriptors::kBaseDescriptor;
     command_line->AppendSwitchASCII(chromeos::switches::kCrosPostLoginDataFD,
                                     base::NumberToString(kPostLoginDataFD));
     }
   }
-#endif // BUILDFLAG(IS_CHROMEOS_LACROS)
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
   static const char* const kCommonSwitchNames[] = {
       embedder_support::kUserAgent,
@@ -2731,18 +2726,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
         command_line->AppendSwitch(switches::kDisableScrollToTextFragment);
       }
 
-      // Override SetTimeoutWithoutClamp feature if its Enterprise Policy
-      // is specified.
-      if (prefs->HasPrefPath(
-              policy::policy_prefs::kSetTimeoutWithout1MsClampEnabled)) {
-        command_line->AppendSwitchASCII(
-            blink::switches::kSetTimeoutWithout1MsClampPolicy,
-            prefs->GetBoolean(
-                policy::policy_prefs::kSetTimeoutWithout1MsClampEnabled)
-                ? blink::switches::kSetTimeoutWithout1MsClampPolicy_ForceEnable
-                : blink::switches::
-                      kSetTimeoutWithout1MsClampPolicy_ForceDisable);
-      }
       // Override MaxUnthrottledTimeoutNestingLevel feature if its Enterprise
       // Policy is specified.
       if (prefs->HasPrefPath(
@@ -2763,6 +2746,32 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
                 ? blink::switches::kEventPathPolicy_ForceEnable
                 : blink::switches::kEventPathPolicy_ForceDisable);
       }
+      // Override OffsetParentNewSpecBehavior feature if its Enterprise policy
+      // is specified.
+      if (prefs->HasPrefPath(
+              policy::policy_prefs::kOffsetParentNewSpecBehaviorEnabled)) {
+        command_line->AppendSwitchASCII(
+            blink::switches::kOffsetParentNewSpecBehaviorPolicy,
+            prefs->GetBoolean(
+                policy::policy_prefs::kOffsetParentNewSpecBehaviorEnabled)
+                ? blink::switches::
+                      kOffsetParentNewSpecBehaviorPolicy_ForceEnable
+                : blink::switches::
+                      kOffsetParentNewSpecBehaviorPolicy_ForceDisable);
+    }
+   // Override SendMouseEventsDisabledFormControls feature if its Enterprise
+   // Policy is specified.
+   if (prefs->HasPrefPath(policy::policy_prefs::
+                              kSendMouseEventsDisabledFormControlsEnabled)) {
+     command_line->AppendSwitchASCII(
+         blink::switches::kSendMouseEventsDisabledFormControlsPolicy,
+         prefs->GetBoolean(policy::policy_prefs::
+                               kSendMouseEventsDisabledFormControlsEnabled)
+              ? blink::switches::
+                    kSendMouseEventsDisabledFormControlsPolicy_ForceEnable
+              : blink::switches::
+                    kSendMouseEventsDisabledFormControlsPolicy_ForceDisable);
+    }
 
       // The IntensiveWakeUpThrottling feature is typically managed via a
       // base::Feature, but it has a managed policy override. The override is
@@ -2928,16 +2937,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
                                     switches::kChangeStackGuardOnForkEnabled);
   }
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
-
-#if BUILDFLAG(IS_ANDROID)
-  if (browser_command_line.HasSwitch(
-          autofill_assistant::switches::kAutofillAssistantDebugAnnotateDom)) {
-    command_line->AppendSwitchASCII(
-        autofill_assistant::switches::kAutofillAssistantDebugAnnotateDom,
-        browser_command_line.GetSwitchValueASCII(
-            autofill_assistant::switches::kAutofillAssistantDebugAnnotateDom));
-  }
-#endif  // BUILDFLAG(IS_ANDROID)
 }
 
 std::string
