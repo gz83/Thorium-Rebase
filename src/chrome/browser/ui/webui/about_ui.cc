@@ -24,7 +24,6 @@
 #include "base/strings/escape.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
@@ -150,12 +149,12 @@ std::string ReadDeviceRegionFromVpd() {
   std::string region = "us";
   chromeos::system::StatisticsProvider* provider =
       chromeos::system::StatisticsProvider::GetInstance();
-  bool region_found =
-      provider->GetMachineStatistic(chromeos::system::kRegionKey, &region);
-  if (region_found) {
+  if (const absl::optional<base::StringPiece> region_statistic =
+          provider->GetMachineStatistic(chromeos::system::kRegionKey)) {
     // We only need the first part of the complex region codes like ca.ansi.
-    std::vector<std::string> region_pieces = base::SplitString(
-        region, ".", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+    std::vector<std::string> region_pieces =
+        base::SplitString(region_statistic.value(), ".", base::TRIM_WHITESPACE,
+                          base::SPLIT_WANT_NONEMPTY);
     if (!region_pieces.empty())
       region = region_pieces[0];
   } else {
