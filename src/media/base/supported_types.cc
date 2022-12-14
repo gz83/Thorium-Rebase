@@ -270,14 +270,6 @@ bool IsAACSupported(const AudioType& type) {
 #endif
 }
 
-bool HasOldVoiceCodecSupport() {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  return true;
-#else
-  return false;
-#endif
-}
-
 }  // namespace
 
 bool IsSupportedAudioType(const AudioType& type) {
@@ -335,10 +327,6 @@ bool IsDefaultSupportedAudioType(const AudioType& type) {
   switch (type.codec) {
     case AudioCodec::kAAC:
       return IsAACSupported(type);
-    case AudioCodec::kAMR_NB:
-    case AudioCodec::kAMR_WB:
-    case AudioCodec::kGSM_MS:
-      return HasOldVoiceCodecSupport();
     case AudioCodec::kFLAC:
     case AudioCodec::kMP3:
     case AudioCodec::kOpus:
@@ -351,6 +339,9 @@ bool IsDefaultSupportedAudioType(const AudioType& type) {
         case AudioCodec::kAC3:
 	      case AudioCodec::kEAC3:
       return true;
+    case AudioCodec::kAMR_NB:
+    case AudioCodec::kAMR_WB:
+    case AudioCodec::kGSM_MS:
     case AudioCodec::kALAC:
     case AudioCodec::kMpegHAudio:
     case AudioCodec::kUnknown:
