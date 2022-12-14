@@ -1551,14 +1551,14 @@ const FeatureEntry::FeatureVariation
          std::size(kOmniboxDynamicMaxAutocomplete102), nullptr}};
 
 const FeatureEntry::FeatureParam kOmniboxUniformRowHeight36[] = {
-    {"OmniboxUniformRowHeight", "36"}};
+    {"OmniboxRichSuggestionVerticalMargin", "4"}};
 const FeatureEntry::FeatureParam kOmniboxUniformRowHeight40[] = {
-    {"OmniboxUniformRowHeight", "40"}};
+    {"OmniboxRichSuggestionVerticalMargin", "6"}};
 
 const FeatureEntry::FeatureVariation kOmniboxSuggestionHeightVariations[] = {
-    {"36 px height for all omnibox suggestions", kOmniboxUniformRowHeight36,
+    {"36px omnibox suggestions", kOmniboxUniformRowHeight36,
      std::size(kOmniboxUniformRowHeight36), nullptr},
-    {"40 px height for all omnibox suggestions", kOmniboxUniformRowHeight40,
+    {"40px omnibox suggestions", kOmniboxUniformRowHeight40,
      std::size(kOmniboxUniformRowHeight40), nullptr},
 };
 
@@ -1641,6 +1641,22 @@ const FeatureEntry::FeatureVariation kTabScrollingWithDraggingVariations[] = {
     {" - tabs scrolling with variable speed region",
      kTabScrollingWithDraggingWithVariableSpeed,
      std::size(kTabScrollingWithDraggingWithVariableSpeed), nullptr}};
+
+const FeatureEntry::FeatureParam kScrollableTabStripOverflowDivider[] = {
+    {features::kScrollableTabStripOverflowModeName, "1"}};
+const FeatureEntry::FeatureParam kScrollableTabStripOverflowFade[] = {
+    {features::kScrollableTabStripOverflowModeName, "2"}};
+const FeatureEntry::FeatureParam kScrollableTabStripOverflowShadow[] = {
+    {features::kScrollableTabStripOverflowModeName, "3"}};
+
+const FeatureEntry::FeatureVariation kScrollableTabStripOverflowVariations[] = {
+    {" - Divider", kScrollableTabStripOverflowDivider,
+     std::size(kScrollableTabStripOverflowDivider), nullptr},  // Divider
+    {" - Fade", kScrollableTabStripOverflowFade,
+     std::size(kScrollableTabStripOverflowFade), nullptr},  // Fade
+    {" - Shadow", kScrollableTabStripOverflowShadow,
+     std::size(kScrollableTabStripOverflowShadow), nullptr},  // Shadow 
+};
 
 const FeatureEntry::FeatureParam kTabSearchSearchThresholdSmall[] = {
     {features::kTabSearchSearchThresholdName, "0.3"}};
@@ -1949,41 +1965,6 @@ const FeatureEntry::FeatureVariation kRelatedSearchesInBarVariations[] = {
     {"with 120sp ellipsized default query chip",
      kRelatedSearchesInBarShowDefaultChipWith120SpEllipsis,
      std::size(kRelatedSearchesInBarShowDefaultChipWith120SpEllipsis), nullptr},
-};
-
-const FeatureEntry::FeatureParam kRelatedSearchesAlternateUxNoShowDefaultChip =
-    {"default_query_chip", "false"};
-const FeatureEntry::FeatureParam kRelatedSearchesAlternateUxShowDefaultChip = {
-    "default_query_chip", "true"};
-const FeatureEntry::FeatureParam
-    kRelatedSearchesAlternateUxShowDefaultChipWith110SpEllipsis[] = {
-        {"default_query_chip", "true"},
-        {"default_query_max_width_sp", "110"}};
-const FeatureEntry::FeatureParam
-    kRelatedSearchesAlternateUxShowDefaultChipWith115SpEllipsis[] = {
-        {"default_query_chip", "true"},
-        {"default_query_max_width_sp", "115"}};
-const FeatureEntry::FeatureParam
-    kRelatedSearchesAlternateUxShowDefaultChipWith120SpEllipsis[] = {
-        {"default_query_chip", "true"},
-        {"default_query_max_width_sp", "120"}};
-const FeatureEntry::FeatureVariation kRelatedSearchesAlternateUxVariations[] = {
-    {"without default query chip",
-     &kRelatedSearchesAlternateUxNoShowDefaultChip, 1, nullptr},
-    {"with default query chip", &kRelatedSearchesAlternateUxShowDefaultChip, 1,
-     nullptr},
-    {"with 110sp ellipsized default query chip",
-     kRelatedSearchesAlternateUxShowDefaultChipWith110SpEllipsis,
-     std::size(kRelatedSearchesAlternateUxShowDefaultChipWith110SpEllipsis),
-     nullptr},
-    {"with 115sp ellipsized default query chip",
-     kRelatedSearchesAlternateUxShowDefaultChipWith115SpEllipsis,
-     std::size(kRelatedSearchesAlternateUxShowDefaultChipWith115SpEllipsis),
-     nullptr},
-    {"with 120sp ellipsized default query chip",
-     kRelatedSearchesAlternateUxShowDefaultChipWith120SpEllipsis,
-     std::size(kRelatedSearchesAlternateUxShowDefaultChipWith120SpEllipsis),
-     nullptr},
 };
 
 const FeatureEntry::FeatureParam kContextualSearchSuppressShortViewWith300Dp[] =
@@ -2380,14 +2361,6 @@ const FeatureEntry::FeatureVariation
 #endif  // BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_ANDROID)
-const FeatureEntry::FeatureParam kLensOnQuickActionSearchWidgetOnTablet[] = {
-    {"enableCameraAssistedSearchOnTabletWidget", "true"}};
-
-const FeatureEntry::FeatureVariation
-    kLensOnQuickActionSearchWidgetVariations[] = {
-        {"(on Tablet)", kLensOnQuickActionSearchWidgetOnTablet,
-         std::size(kLensOnQuickActionSearchWidgetOnTablet), nullptr}};
-
 const FeatureEntry::FeatureParam kLensCameraAssistedSearchLensButtonStart[] = {
     {"searchBoxStartVariantForLensCameraAssistedSearch", "true"}};
 
@@ -2729,19 +2702,6 @@ const FeatureEntry::Choice kCrostiniContainerChoices[] = {
 };
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-// The variations of --password-domain-capabilities-fetching.
-const FeatureEntry::FeatureParam
-    kPasswordDomainCapabilitiesFetchingVariationLiveExperiment[] = {
-        {password_manager::features::kPasswordChangeLiveExperimentParam.name,
-         "true"}};
-
-const FeatureEntry::FeatureVariation
-    kPasswordDomainCapabilitiesFetchingFeatureVariations[] = {
-        {"Live experiment",
-         kPasswordDomainCapabilitiesFetchingVariationLiveExperiment,
-         std::size(kPasswordDomainCapabilitiesFetchingVariationLiveExperiment),
-         nullptr}};
-
 // The variations of --password-change-support.
 const FeatureEntry::FeatureParam
     kPasswordChangeVariationWithForcedDialogAfterEverySuccessfulSubmission[] = {
@@ -2763,39 +2723,13 @@ const FeatureEntry::FeatureParam
              kPasswordChangeInSettingsWithForcedWarningForEverySite,
          "true"}};
 
-const FeatureEntry::FeatureParam
-    kPasswordChangeInSettingsVariationWeakCredentials[] = {
-        {password_manager::features::
-             kPasswordChangeInSettingsWeakCredentialsParam.name,
-         "true"}};
-
 const FeatureEntry::FeatureVariation
     kPasswordChangeInSettingsFeatureVariations[] = {
         {"Force leak warnings for every site in settings.",
          kPasswordChangeInSettingsVariationWithForcedWarningForEverySite,
          std::size(
              kPasswordChangeInSettingsVariationWithForcedWarningForEverySite),
-         nullptr},
-        {"Include weak credentials.",
-         kPasswordChangeInSettingsVariationWeakCredentials,
-         std::size(kPasswordChangeInSettingsVariationWeakCredentials),
          nullptr}};
-
-#if BUILDFLAG(IS_ANDROID)
-// The variations of --touch-to-fill-password-submission.
-const FeatureEntry::FeatureParam
-    kTouchToFillPasswordSubmissionWithConservativeHeuristics[] = {
-        {password_manager::features::
-             kTouchToFillPasswordSubmissionWithConservativeHeuristics,
-         "true"}};
-
-const FeatureEntry::FeatureVariation
-    kTouchToFillPasswordSubmissionVariations[] = {
-        {"Use conservative heuristics",
-         kTouchToFillPasswordSubmissionWithConservativeHeuristics,
-         std::size(kTouchToFillPasswordSubmissionWithConservativeHeuristics),
-         nullptr}};
-#endif  // BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_ANDROID)
 // The variations of --metrics-settings-android.
@@ -2898,32 +2832,14 @@ const FeatureEntry::FeatureVariation kLauncherItemSuggestVariations[] = {
 
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-constexpr FeatureEntry::FeatureParam kPlatformProvidedTrustTokenIssuance[] = {
-    {"PlatformProvidedTrustTokenIssuance", "true"}};
-
-constexpr FeatureEntry::FeatureVariation
-    kPlatformProvidedTrustTokensVariations[] = {
-        {"with platform-provided trust token issuance",
-         kPlatformProvidedTrustTokenIssuance,
-         std::size(kPlatformProvidedTrustTokenIssuance), nullptr}};
-
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 constexpr char kWallpaperFastRefreshInternalName[] = "wallpaper-fast-refresh";
 constexpr char kWallpaperFullScreenPreviewInternalName[] =
     "wallpaper-fullscreen-preview";
-constexpr char kWallpaperGooglePhotosIntegrationInternalName[] =
-    "wallpaper-google-photos-integration";
 constexpr char kWallpaperPerDeskName[] = "per-desk-wallpaper";
+constexpr char kLibAssistantV2MigrationInternalName[] =
+    "cros-libassistant-v2-migration";
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-#if BUILDFLAG(ENABLE_PAINT_PREVIEW) && BUILDFLAG(IS_ANDROID)
-const FeatureEntry::FeatureParam kPaintPreviewStartupWithAccessibility[] = {
-    {"has_accessibility_support", "true"}};
-
-const FeatureEntry::FeatureVariation kPaintPreviewStartupVariations[] = {
-    {"with accessibility support", kPaintPreviewStartupWithAccessibility,
-     std::size(kPaintPreviewStartupWithAccessibility), nullptr}};
-#endif  // BUILDFLAG(ENABLE_PAINT_PREVIEW) && BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 constexpr char kBorealisBigGlInternalName[] = "borealis-big-gl";
@@ -3009,218 +2925,6 @@ const FeatureEntry::FeatureVariation kLargeFaviconFromGoogleVariations[] = {
      std::size(kLargeFaviconFromGoogle128), nullptr}};
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-// Possible configurations for the snooping protection feature.
-// Empty params configures the feature to apply a simple threshold to one
-// sample.
-
-const FeatureEntry::FeatureParam kSnoopingProtection2Frames[] = {
-    {"SnoopingProtection_filter_config_case", "2"},
-    {"SnoopingProtection_positive_count_threshold", "2"},
-    {"SnoopingProtection_negative_count_threshold", "2"},
-    {"SnoopingProtection_uncertain_count_threshold", "2"},
-    {"SnoopingProtection_positive_score_threshold", "40"},
-    {"SnoopingProtection_negative_score_threshold", "40"}};
-
-const FeatureEntry::FeatureParam kSnoopingProtection5Frames[] = {
-    {"SnoopingProtection_filter_config_case", "2"},
-    {"SnoopingProtection_positive_count_threshold", "5"},
-    {"SnoopingProtection_negative_count_threshold", "5"},
-    {"SnoopingProtection_uncertain_count_threshold", "5"},
-    {"SnoopingProtection_positive_score_threshold", "40"},
-    {"SnoopingProtection_negative_score_threshold", "40"}};
-
-const FeatureEntry::FeatureParam kSnoopingProtectionThreshold20[] = {
-    {"SnoopingProtection_filter_config_case", "2"},
-    {"SnoopingProtection_positive_count_threshold", "3"},
-    {"SnoopingProtection_negative_count_threshold", "3"},
-    {"SnoopingProtection_uncertain_count_threshold", "3"},
-    {"SnoopingProtection_positive_score_threshold", "20"},
-    {"SnoopingProtection_negative_score_threshold", "20"}};
-
-const FeatureEntry::FeatureParam kSnoopingProtectionThreshold40[] = {
-    {"SnoopingProtection_filter_config_case", "2"},
-    {"SnoopingProtection_positive_count_threshold", "3"},
-    {"SnoopingProtection_negative_count_threshold", "3"},
-    {"SnoopingProtection_uncertain_count_threshold", "3"},
-    {"SnoopingProtection_positive_score_threshold", "40"},
-    {"SnoopingProtection_negative_score_threshold", "40"}};
-
-const FeatureEntry::FeatureParam kSnoopingProtectionThreshold60[] = {
-    {"SnoopingProtection_filter_config_case", "2"},
-    {"SnoopingProtection_positive_count_threshold", "3"},
-    {"SnoopingProtection_negative_count_threshold", "3"},
-    {"SnoopingProtection_uncertain_count_threshold", "3"},
-    {"SnoopingProtection_positive_score_threshold", "60"},
-    {"SnoopingProtection_negative_score_threshold", "60"}};
-
-const FeatureEntry::FeatureParam kSnoopingProtectionThreshold80[] = {
-    {"SnoopingProtection_filter_config_case", "2"},
-    {"SnoopingProtection_positive_count_threshold", "3"},
-    {"SnoopingProtection_negative_count_threshold", "3"},
-    {"SnoopingProtection_uncertain_count_threshold", "3"},
-    {"SnoopingProtection_positive_score_threshold", "80"},
-    {"SnoopingProtection_negative_score_threshold", "80"}};
-
-const FeatureEntry::FeatureVariation kSnoopingProtectionVariations[] = {
-    {"2Frames", kSnoopingProtection2Frames,
-     std::size(kSnoopingProtection2Frames), nullptr},
-    {"5Frames", kSnoopingProtection5Frames,
-     std::size(kSnoopingProtection5Frames), nullptr},
-    {"Threshold20", kSnoopingProtectionThreshold20,
-     std::size(kSnoopingProtectionThreshold20), nullptr},
-    {"Threshold40", kSnoopingProtectionThreshold40,
-     std::size(kSnoopingProtectionThreshold40), nullptr},
-    {"Threshold60", kSnoopingProtectionThreshold60,
-     std::size(kSnoopingProtectionThreshold60), nullptr},
-    {"Threshold80", kSnoopingProtectionThreshold80,
-     std::size(kSnoopingProtectionThreshold80), nullptr},
-
-};
-
-const FeatureEntry::FeatureParam kQuickDim10s[] = {
-    {"QuickDim_quick_dim_ms", "10000"},
-    {"QuickDim_filter_config_case", "2"},
-    {"QuickDim_positive_count_threshold", "1"},
-    {"QuickDim_negative_count_threshold", "2"},
-    {"QuickDim_uncertain_count_threshold", "2"},
-    {"QuickDim_positive_score_threshold", "0"},
-    {"QuickDim_negative_score_threshold", "0"},
-};
-
-const FeatureEntry::FeatureParam kQuickDim10sQuickLock70s[] = {
-    {"QuickDim_quick_dim_ms", "10000"},
-    {"QuickDim_quick_lock_ms", "70000"},
-    {"QuickDim_filter_config_case", "2"},
-    {"QuickDim_positive_count_threshold", "1"},
-    {"QuickDim_negative_count_threshold", "2"},
-    {"QuickDim_uncertain_count_threshold", "2"},
-    {"QuickDim_positive_score_threshold", "0"},
-    {"QuickDim_negative_score_threshold", "0"},
-};
-
-const FeatureEntry::FeatureParam kQuickDim10sQuickLock130s[] = {
-    {"QuickDim_quick_dim_ms", "10000"},
-    {"QuickDim_quick_lock_ms", "130000"},
-    {"QuickDim_filter_config_case", "2"},
-    {"QuickDim_positive_count_threshold", "1"},
-    {"QuickDim_negative_count_threshold", "2"},
-    {"QuickDim_uncertain_count_threshold", "2"},
-    {"QuickDim_positive_score_threshold", "0"},
-    {"QuickDim_negative_score_threshold", "0"},
-};
-
-const FeatureEntry::FeatureParam kQuickDim10sQuickLock130sFeedback[] = {
-    {"QuickDim_quick_dim_ms", "10000"},
-    {"QuickDim_quick_lock_ms", "130000"},
-    {"QuickDim_filter_config_case", "2"},
-    {"QuickDim_positive_count_threshold", "1"},
-    {"QuickDim_negative_count_threshold", "2"},
-    {"QuickDim_uncertain_count_threshold", "2"},
-    {"QuickDim_positive_score_threshold", "0"},
-    {"QuickDim_negative_score_threshold", "0"},
-    {"QuickDim_send_feedback_if_undimmed", "true"},
-};
-
-const FeatureEntry::FeatureParam kQuickDim10sQuickLock130sThreshold20[] = {
-    {"QuickDim_quick_dim_ms", "10000"},
-    {"QuickDim_quick_lock_ms", "130000"},
-    {"QuickDim_filter_config_case", "2"},
-    {"QuickDim_positive_count_threshold", "1"},
-    {"QuickDim_negative_count_threshold", "2"},
-    {"QuickDim_uncertain_count_threshold", "2"},
-    {"QuickDim_positive_score_threshold", "20"},
-    {"QuickDim_negative_score_threshold", "20"},
-};
-
-const FeatureEntry::FeatureParam kQuickDim10sQuickLock130sThresholdMinus20[] = {
-    {"QuickDim_quick_dim_ms", "10000"},
-    {"QuickDim_quick_lock_ms", "130000"},
-    {"QuickDim_filter_config_case", "2"},
-    {"QuickDim_positive_count_threshold", "1"},
-    {"QuickDim_negative_count_threshold", "2"},
-    {"QuickDim_uncertain_count_threshold", "2"},
-    {"QuickDim_positive_score_threshold", "-20"},
-    {"QuickDim_negative_score_threshold", "-20"},
-};
-
-const FeatureEntry::FeatureParam kQuickDim10sQuickLock130sThreshold40[] = {
-    {"QuickDim_quick_dim_ms", "10000"},
-    {"QuickDim_quick_lock_ms", "130000"},
-    {"QuickDim_filter_config_case", "2"},
-    {"QuickDim_positive_count_threshold", "1"},
-    {"QuickDim_negative_count_threshold", "2"},
-    {"QuickDim_uncertain_count_threshold", "2"},
-    {"QuickDim_positive_score_threshold", "40"},
-    {"QuickDim_negative_score_threshold", "40"},
-};
-
-const FeatureEntry::FeatureParam kQuickDim10sQuickLock130sThresholdMinus40[] = {
-    {"QuickDim_quick_dim_ms", "10000"},
-    {"QuickDim_quick_lock_ms", "130000"},
-    {"QuickDim_filter_config_case", "2"},
-    {"QuickDim_positive_count_threshold", "1"},
-    {"QuickDim_negative_count_threshold", "2"},
-    {"QuickDim_uncertain_count_threshold", "2"},
-    {"QuickDim_positive_score_threshold", "-40"},
-    {"QuickDim_negative_score_threshold", "-40"},
-};
-
-const FeatureEntry::FeatureParam kQuickDim45sQuickLock105s[] = {
-    {"QuickDim_quick_dim_ms", "45000"},
-    {"QuickDim_quick_lock_ms", "105000"},
-    {"QuickDim_filter_config_case", "2"},
-    {"QuickDim_positive_count_threshold", "1"},
-    {"QuickDim_negative_count_threshold", "2"},
-    {"QuickDim_uncertain_count_threshold", "2"},
-    {"QuickDim_positive_score_threshold", "0"},
-    {"QuickDim_negative_score_threshold", "0"},
-};
-
-const FeatureEntry::FeatureParam kQuickDim45sQuickLock165s[] = {
-    {"QuickDim_quick_dim_ms", "45000"},
-    {"QuickDim_quick_lock_ms", "165000"},
-    {"QuickDim_filter_config_case", "2"},
-    {"QuickDim_positive_count_threshold", "1"},
-    {"QuickDim_negative_count_threshold", "2"},
-    {"QuickDim_uncertain_count_threshold", "2"},
-    {"QuickDim_positive_score_threshold", "0"},
-    {"QuickDim_negative_score_threshold", "0"},
-};
-
-const FeatureEntry::FeatureParam kQuickDim120sQuickLock240s[] = {
-    {"QuickDim_quick_dim_ms", "120000"},
-    {"QuickDim_quick_lock_ms", "240000"},
-    {"QuickDim_filter_config_case", "2"},
-    {"QuickDim_positive_count_threshold", "1"},
-    {"QuickDim_negative_count_threshold", "2"},
-    {"QuickDim_uncertain_count_threshold", "2"},
-    {"QuickDim_positive_score_threshold", "0"},
-    {"QuickDim_negative_score_threshold", "0"},
-};
-
-const FeatureEntry::FeatureVariation kQuickDimVariations[] = {
-    {"Dim10sLock70s", kQuickDim10sQuickLock70s,
-     std::size(kQuickDim10sQuickLock70s), nullptr},
-    {"Dim10sLock130s", kQuickDim10sQuickLock130s,
-     std::size(kQuickDim10sQuickLock130s), nullptr},
-    {"Dim45sLock105s", kQuickDim45sQuickLock105s,
-     std::size(kQuickDim45sQuickLock105s), nullptr},
-    {"Dim45sLock165s", kQuickDim45sQuickLock165s,
-     std::size(kQuickDim45sQuickLock165s), nullptr},
-    {"Dim120sLock240s", kQuickDim120sQuickLock240s,
-     std::size(kQuickDim120sQuickLock240s), nullptr},
-    {"Dim10sNoLock", kQuickDim10s, std::size(kQuickDim10s), nullptr},
-    {"Dim10sLock130sThreshold20", kQuickDim10sQuickLock130sThreshold20,
-     std::size(kQuickDim10sQuickLock130sThreshold20), nullptr},
-    {"Dim10sLock130sThreshold-20", kQuickDim10sQuickLock130sThresholdMinus20,
-     std::size(kQuickDim10sQuickLock130sThresholdMinus20), nullptr},
-    {"Dim10sLock130sThreshold40", kQuickDim10sQuickLock130sThreshold40,
-     std::size(kQuickDim10sQuickLock130sThreshold40), nullptr},
-    {"Dim10sLock130sThreshold-40", kQuickDim10sQuickLock130sThresholdMinus40,
-     std::size(kQuickDim10sQuickLock130sThresholdMinus40), nullptr},
-    {"Dim10sLock130sWithFeedback", kQuickDim10sQuickLock130sFeedback,
-     std::size(kQuickDim10sQuickLock130sFeedback), nullptr},
-};
 
 const FeatureEntry::FeatureParam kVCBackgroundBlurLowest[] = {
     {"blur_level", "lowest"},
@@ -3401,18 +3105,6 @@ constexpr FeatureEntry::FeatureVariation kLensStandaloneVariations[] = {
      std::size(kLensStandaloneWithSidePanel), nullptr},
 };
 
-constexpr FeatureEntry::FeatureParam
-    kLensInstructionChipWithImageSelectionIcon[] = {
-        {"use-selection-icon-with-image", "true"}};
-constexpr FeatureEntry::FeatureParam kLensInstructionChipWithAltString[] = {
-    {"use-alt-chip-string", "true"}};
-constexpr FeatureEntry::FeatureVariation kLensInstructionChipVariations[] = {
-    {"With Image Selection Icon", kLensInstructionChipWithImageSelectionIcon,
-     std::size(kLensInstructionChipWithImageSelectionIcon), nullptr},
-    {"With Alt Text", kLensInstructionChipWithAltString,
-     std::size(kLensInstructionChipWithAltString), nullptr},
-};
-
 constexpr FeatureEntry::FeatureParam kLensFormatOptimizationJPEG[] = {
     {"use-webp-image-search", "false"},
     {"use-webp-region-search", "false"},
@@ -3498,7 +3190,15 @@ const FeatureEntry::FeatureParam kHighEfficiencyModeAvailable2Minutes[] = {
     {"time_before_discard", "2m"}};
 const FeatureEntry::FeatureParam kHighEfficiencyModeAvailable1Hour[] = {
     {"time_before_discard", "1h"}};
+const FeatureEntry::FeatureParam kHighEfficiencyModeAvailable4Hour[] = {
+    {"time_before_discard", "4h"}};
+const FeatureEntry::FeatureParam kHighEfficiencyModeAvailable6Hour[] = {
+    {"time_before_discard", "6h"}};
+const FeatureEntry::FeatureParam kHighEfficiencyModeAvailable12Hour[] = {
+    {"time_before_discard", "12h"}};
 const FeatureEntry::FeatureParam kHighEfficiencyModeDefaultOn[] = {
+    {"default_state", "true"}};
+const FeatureEntry::FeatureParam kHighEfficiencyModeDefaultOnAnd30Seconds[] = {
     {"default_state", "true"},
     {"time_before_discard", "30s"}};
 const FeatureEntry::FeatureVariation kHighEfficiencyModeAvailableVariations[] =
@@ -3511,28 +3211,19 @@ const FeatureEntry::FeatureVariation kHighEfficiencyModeAvailableVariations[] =
          std::size(kHighEfficiencyModeAvailable2Minutes), nullptr},
         {"With 1 Hour Discard", kHighEfficiencyModeAvailable1Hour,
          std::size(kHighEfficiencyModeAvailable1Hour), nullptr},
-        {"With Default On and 30 Second Discard", kHighEfficiencyModeDefaultOn,
+        {"With 4 Hour Discard", kHighEfficiencyModeAvailable4Hour,
+         std::size(kHighEfficiencyModeAvailable4Hour), nullptr},
+        {"With 6 Hour Discard", kHighEfficiencyModeAvailable6Hour,
+         std::size(kHighEfficiencyModeAvailable6Hour), nullptr},
+        {"With 12 Hour Discard", kHighEfficiencyModeAvailable12Hour,
+         std::size(kHighEfficiencyModeAvailable12Hour), nullptr},
+        {"With Default On", kHighEfficiencyModeDefaultOn,
          std::size(kHighEfficiencyModeDefaultOn), nullptr},
+         {"With Default On and 30 Second Discard",
+          kHighEfficiencyModeDefaultOnAnd30Seconds,
+          std::size(kHighEfficiencyModeDefaultOnAnd30Seconds), nullptr},
 };
 #endif  // !BUILDFLAG(IS_ANDROID)
-
-#if BUILDFLAG(IS_ANDROID)
-const FeatureEntry::FeatureParam kSyncAndroidNTPPromoMax2ImpressionsParam[] = {
-    {"2 Impressions Limit", "2"}};
-const FeatureEntry::FeatureParam kSyncAndroidNTPPromoMax10ImpressionsParam[] = {
-    {"10 Impressions Limit", "10"}};
-const FeatureEntry::FeatureParam kSyncAndroidNTPPromoMax20ImpressionsParam[] = {
-    {"20 Impressions Limit", "20"}};
-const FeatureEntry::FeatureVariation
-    kSyncAndroidLimitNTPPromoImpressionsVariations[] = {
-        {"2 Impressions Limit", kSyncAndroidNTPPromoMax2ImpressionsParam,
-         std::size(kSyncAndroidNTPPromoMax2ImpressionsParam), nullptr},
-        {"10 Impressions Limit", kSyncAndroidNTPPromoMax10ImpressionsParam,
-         std::size(kSyncAndroidNTPPromoMax10ImpressionsParam), nullptr},
-        {"20 Impressions Limit", kSyncAndroidNTPPromoMax20ImpressionsParam,
-         std::size(kSyncAndroidNTPPromoMax20ImpressionsParam), nullptr},
-};
-#endif  // BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_ANDROID)
 const FeatureEntry::FeatureParam
@@ -3558,21 +3249,21 @@ const FeatureEntry::FeatureVariation
 #if BUILDFLAG(IS_ANDROID)
 const FeatureEntry::FeatureParam kTabSelectionEditorV2_share_enabled[] = {
     {"enable_share", "true"}};
-const FeatureEntry::FeatureParam kTabSelectionEditorV2_longpress_enabled[] = {
-    {"enable_longpress_entry", "true"}};
+const FeatureEntry::FeatureParam kTabSelectionEditorV2_bookmarks_enabled[] = {
+    {"enable_bookmarks", "true"}};
 const FeatureEntry::FeatureParam
-    kTabSelectionEditorV2_longpress_and_share_enabled[] = {
+    kTabSelectionEditorV2_share_and_bookmarks_enabled[] = {
         {"enable_share", "true"},
-        {"enable_longpress_entry", "true"},
+        {"enable_bookmarks", "true"},
 };
 const FeatureEntry::FeatureVariation kTabSelectionEditorV2Variations[] = {
     {"- with share", kTabSelectionEditorV2_share_enabled,
      std::size(kTabSelectionEditorV2_share_enabled), nullptr},
-    {"- with longpress", kTabSelectionEditorV2_longpress_enabled,
-     std::size(kTabSelectionEditorV2_longpress_enabled), nullptr},
-    {"- with share and longpress",
-     kTabSelectionEditorV2_longpress_and_share_enabled,
-     std::size(kTabSelectionEditorV2_longpress_and_share_enabled), nullptr},
+    {"- with bookmarks", kTabSelectionEditorV2_bookmarks_enabled,
+     std::size(kTabSelectionEditorV2_bookmarks_enabled), nullptr},
+    {"- with share and bookmarks",
+     kTabSelectionEditorV2_share_and_bookmarks_enabled,
+     std::size(kTabSelectionEditorV2_share_and_bookmarks_enabled), nullptr},
 };
 #endif  // BUILDFLAG(IS_ANDROID)
 
@@ -3589,15 +3280,69 @@ const FeatureEntry::FeatureVariation kPasswordNotesAuthValidityVariations[] = {
      nullptr},
 };
 
-#if BUILDFLAG(IS_ANDROID)
-// The variations of --fast-checkout.
-const FeatureEntry::FeatureParam kFastCheckoutConsentlessExecution[] = {
-    {features::kFastCheckoutConsentlessExecutionParam.name, "true"}};
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+const FeatureEntry::FeatureParam kGalleryAppPdfEditNotificationEditAndSign[] = {
+    {"text", "Edit and Sign"}};
+const FeatureEntry::FeatureParam
+    kGalleryAppPdfEditNotificationOpenWithGalleryApp[] = {
+        {"text", "Open with Gallery app"}};
+const FeatureEntry::FeatureVariation
+    kGalleryAppPdfEditNotificationVariations[] = {
+        {"Edit and Sign", kGalleryAppPdfEditNotificationEditAndSign,
+         std::size(kGalleryAppPdfEditNotificationEditAndSign), nullptr},
+        {"Open with Gallery app",
+         kGalleryAppPdfEditNotificationOpenWithGalleryApp,
+         std::size(kGalleryAppPdfEditNotificationOpenWithGalleryApp), nullptr}};
+#endif
 
-const FeatureEntry::FeatureVariation kFastCheckoutVariations[] = {
-    {"Consentless-only execution.", kFastCheckoutConsentlessExecution,
-     std::size(kFastCheckoutConsentlessExecution), nullptr}};
-#endif  // BUILDFLAG(IS_ANDROID)
+constexpr FeatureEntry::FeatureParam
+    kPasswordStrengthIndicatorMinimizedVariation[] = {
+        {password_manager::features::
+             kPasswordStrengthIndicatorWithMinimizedState.name,
+         "true"}};
+
+constexpr FeatureEntry::FeatureVariation
+    kPasswordStrengthIndicatorVariations[] = {
+        {" with minimized state", kPasswordStrengthIndicatorMinimizedVariation,
+         std::size(kPasswordStrengthIndicatorMinimizedVariation), nullptr}};
+
+#if !BUILDFLAG(IS_ANDROID)
+const FeatureEntry::FeatureParam kOsIntegrationSubManagersWriteConfig[] = {
+    {"stage", "write_config"}};
+const FeatureEntry::FeatureParam
+    kOsIntegrationSubManagersExecuteAndWriteConfig[] = {
+        {"stage", "execute_and_write_config"}};
+
+const FeatureEntry::FeatureVariation
+    kOsIntegrationSubManagersConfigVariations[] = {
+        {"Write Config only", kOsIntegrationSubManagersWriteConfig,
+         std::size(kOsIntegrationSubManagersWriteConfig), nullptr},
+        {"Execute and Write Config",
+         kOsIntegrationSubManagersExecuteAndWriteConfig,
+         std::size(kOsIntegrationSubManagersExecuteAndWriteConfig), nullptr}};
+#endif  // !BUILDFLAG(IS_ANDROID)
+
+const FeatureEntry::FeatureParam kWebRtcApmDownmixMethodAverage[] = {
+    {"method", "average"}};
+const FeatureEntry::FeatureParam kWebRtcApmDownmixMethodFirstChannel[] = {
+    {"method", "first"}};
+const FeatureEntry::FeatureVariation kWebRtcApmDownmixMethodVariations[] = {
+    {"- Average all the input channels", kWebRtcApmDownmixMethodAverage,
+     std::size(kWebRtcApmDownmixMethodAverage), nullptr},
+    {"- Use first channel", kWebRtcApmDownmixMethodFirstChannel,
+     std::size(kWebRtcApmDownmixMethodFirstChannel), nullptr}};
+
+#if !BUILDFLAG(IS_ANDROID)
+const FeatureEntry::FeatureParam
+    kSafetyCheckUnusedSitePermissionsNoDelayParam[] = {
+        {"unused-site-permissions-no-delay-for-testing", "true"}};
+
+const FeatureEntry::FeatureVariation
+    kSafetyCheckUnusedSitePermissionsVariations[] = {
+        {"for testing", kSafetyCheckUnusedSitePermissionsNoDelayParam,
+         std::size(kSafetyCheckUnusedSitePermissionsNoDelayParam), nullptr},
+};
+#endif
 
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
