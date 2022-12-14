@@ -1309,6 +1309,18 @@ Private state tokens improve privacy on the web and can’t be used to find out 
       <message name="IDS_SETTINGS_TOPICS_PAGE_BLOCKED_TOPICS_HEADING" translateable="false" desc="Title for the blocked Topics preference.">
         Integer faucibus metus
       </message>
+      <message name="IDS_SETTINGS_TOPICS_PAGE_BLOCKED_TOPICS_DESCRIPTION" translateable="false" desc="">
+        Donec fringilla justo vel ligula finibus, ut rutrum lectus vestibulum. Suspendisse vestibulum lorem lacinia nulla consequat auctor.
+      </message>
+      <message name="IDS_SETTINGS_TOPICS_PAGE_BLOCKED_TOPICS_DESCRIPTION_DISABLED" translateable="false" desc="">
+        Donec commodo sem non augue blandit, ullamcorper aliquam enim fermentum
+      </message>
+      <message name="IDS_SETTINGS_TOPICS_PAGE_BLOCKED_TOPICS_DESCRIPTION_EMPTY" translateable="false" desc="">
+        Diam maecenas sed
+      </message>
+      <message name="IDS_SETTINGS_TOPICS_PAGE_BLOCKED_TOPICS_SUB_PAGE_TITLE" translateable="false" desc="">
+        Integer faucibus metus
+      </message>
       <!-- TODO(http://b/254412601): Format links.-->
       <message name="IDS_SETTINGS_TOPICS_PAGE_FOOTER" translateable="false" desc="Footer for the Topics preference page.">
         Quisque eu auctor purus, id tempus nulla. Pellentesque porta orci purus. Donec dictum, <ph name="BEGIN_LINK_1">&lt;link1&gt;</ph>justo nec ultricies semper<ph name="END_LINK_1">&lt;/link1&gt;</ph>, <ph name="BEGIN_LINK_2">&lt;link2&gt;</ph>eros mauris varius nibh<ph name="END_LINK_2">&lt;/link2&gt;</ph>, sit amet molestie quam arcu id urna. Donec vulputate dui ut lorem egestas, ac sollicitudin metus fermentum.
@@ -2309,6 +2321,10 @@ Your Google account may have other forms of browsing history like searches and a
       </message>
       <message name="IDS_SYNC_CUSTOM_PASSPHRASE" desc="Prompt user to create a custom sync password.">
         Passphrase encryption doesn’t include payment methods and addresses from Google Pay. Only someone with your passphrase can read your encrypted data. The passphrase is not sent to or stored by Google. If you forget your passphrase or want to change this setting you'll need to reset sync. <ph name="BEGIN_LINK">&lt;learnmore&gt;</ph>Learn more<ph name="END_LINK">&lt;/learnmore&gt;</ph>
+      </message>
+      <message name="IDS_NEW_SYNC_CUSTOM_PASSPHRASE" desc="Prompt user to create a custom sync password.">
+        Payment methods and addresses from Google Pay won’t be encrypted. Browsing history from Thorium won’t sync.
+Only someone with your passphrase can read your encrypted data. The passphrase is not sent to or stored by Google. If you forget your passphrase or want to change this setting, you’ll need to reset sync. <ph name="BEGIN_LINK">&lt;learnmore&gt;</ph>Learn more<ph name="END_LINK">&lt;/learnmore&gt;</ph>
       </message>
       <message name="IDS_SYNC_ENTER_CUSTOM_PASSPHRASE_HINT" desc="Hint for the passphrase field when user is to type in a passphrase. [CHAR_LIMIT=30]">
         Passphrase
@@ -3383,12 +3399,6 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_NTP_MANAGE_FEED" desc="Menu item to manage feed settings from the feed header overflow menu.">
         Manage
       </message>
-      <message name="IDS_CORMORANT_CREATOR_OFFLINE_ERROR_TITLE" desc="Creator page error title when the user is offline.">
-        You're offline
-      </message>
-      <message name="IDS_CORMORANT_CREATOR_OFFLINE_ERROR_DESCRIPTION" desc="Creator page error description when the user is offline.">
-        Check your internet connection and try again
-      </message>
       <message name="IDS_CORMORANT_CREATOR_CONTENT_UNAVAILABLE_ERROR_TITLE" desc="Creator page error title when the creator has no content available.">
         Nothing to show yet
       </message>
@@ -3526,7 +3536,7 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
         Restore tab group of <ph name="TAB_COUNT">%1$s<ex>5</ex></ph> tabs as a new background tab group.
       </message>
       <message name="IDS_WEB_FEED_AWARENESS" desc="Educating the user about the web feed.">
-        Follow any sites you want
+        See sites you follow here
       </message>
 
       <!-- Explore sites strings -->
@@ -5089,24 +5099,6 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_PREFS_AUTOFILL_ASSISTANT_SUMMARY" desc="Summary for the Autofill Assistant preferences screen.">
         Helps you complete tasks, such as checkout, throughout the web
       </message>
-      <message name="IDS_PREFS_WEB_ASSISTANCE_SECTION_TITLE" desc="Title for the web assistance section">
-        Web Assistance
-      </message>
-      <message name="IDS_PREFS_AUTOFILL_ASSISTANT_GET_HELP_TITLE" desc="Title for the switch toggling whether Autofill Assistant is enabled.">
-        Get help with tasks on the web
-      </message>
-      <message name="IDS_PREFS_AUTOFILL_ASSISTANT_GET_HELP_SUMMARY" desc="Description for the Autofill Assistant toggle.">
-        To help you complete tasks, Google will receive the URLs and contents of sites on which you use Assistant, as well as information you submit through Assistant
-      </message>
-      <message name="IDS_PREFS_AUTOFILL_ASSISTANT_PROACTIVE_HELP_TITLE" desc="Title for the switch toggling whether proactive help is enabled. When turned on, the Assistant will be able to proactively show up (without explicit user prompt) and offer to help.">
-        Proactive Help
-      </message>
-      <message name="IDS_PREFS_AUTOFILL_ASSISTANT_PROACTIVE_HELP_SUMMARY" desc="Description for the proactive help toggle. It explains that the Assistant may appear proactively when it detects that it can help the user. ">
-        Assistant will appear when it detects that it can help you on supported websites
-      </message>
-      <message name="IDS_PREFS_PROACTIVE_HELP_SYNC_LINK" desc="Disclaimer that appears after the proactive help toggle, but only if 'make search and browsing better'[MSBB] is switched off. Proactive help is only possible while MSBB is turned on, which is the default for signed-in users. If MSBB is off, the proactive help setting will be grayed out and this disclaimer is shown.">
-        To use this setting <ph name="BEGIN_LINK">&lt;link&gt;</ph>Make searches and browsing better<ph name="END_LINK">&lt;/link&gt;</ph> must be turned on
-      </message>
       <!-- Usage Stats strings -->
       <message name="IDS_USAGE_STATS_CONSENT_TITLE" desc="Title for activity authorizing Digital Wellbeing to access Thorium usage data">
         Show your Thorium activity in Digital Wellbeing?
@@ -5133,13 +5125,6 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <!-- Tab Group Tab Switcher strings -->
       <message name="IDS_TAB_MANAGEMENT_MODULE_TITLE" desc="Text shown when the Tab Management module is referenced in install start, success, failure UI (e.g. in IDS_MODULE_INSTALL_START_TEXT, which will expand to 'Installing Tab management for Thorium…').">
         Tab management
-      </message>
-
-      <message name="IDS_AUTOFILL_ASSISTANT_MODULE_TITLE"
-  desc="Text shown when the Foo module is referenced in install start, success,
-        failure UI (e.g. in IDS_MODULE_INSTALL_START_TEXT, which will expand to
-        'Installing Assistant for Thorium…').">
-  Google Assistant in Thorium
       </message>
 
       <message name="IDS_DEV_UI_MODULE_TITLE" desc="Text shown when the Developer UI module is referenced in install start, success, failure UI (e.g. in IDS_MODULE_INSTALL_START_TEXT, which will expand to 'Installing Developer UI for Thorium…').">
