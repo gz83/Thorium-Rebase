@@ -5064,6 +5064,17 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
                          MaybeCreateNavigationThrottle(handle),
                      &throttles);
   }
+
+#if BUILDFLAG(IS_WIN)
+  // Don't perform platform authentication in incognito and guest profiles.
+  if (profile && !profile->IsOffTheRecord()) {
+    MaybeAddThrottle(
+        enterprise_auth::PlatformAuthNavigationThrottle::MaybeCreateThrottleFor(
+            handle),
+        &throttles);
+  }
+#endif  // BUILDFLAG(IS_WIN)
+
   return throttles;
 }
 
@@ -5280,11 +5291,6 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
   ChromeNavigationUIData* chrome_navigation_ui_data =
       static_cast<ChromeNavigationUIData*>(navigation_ui_data);
 
-  url_param_filter::UrlParamFilterThrottle::MaybeCreateThrottle(
-      profile->GetPrefs()->GetBoolean(
-          policy::policy_prefs::kUrlParamFilterEnabled),
-      wc_getter.Run(), request, &result);
-
 #if BUILDFLAG(SAFE_BROWSING_AVAILABLE)
   bool matches_enterprise_allowlist = safe_browsing::IsURLAllowlistedByPolicy(
       request.url, *profile->GetPrefs());
@@ -5417,16 +5423,25 @@ void ChromeContentBrowserClient::RegisterNonNetworkNavigationURLLoaderFactories(
   content::BrowserContext* browser_context = web_contents->GetBrowserContext();
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  factories->emplace(
-      extensions::kExtensionScheme,
-      extensions::CreateExtensionNavigationURLLoaderFactory(
-          browser_context, ukm_source_id,
-          !!extensions::WebViewGuest::FromWebContents(web_contents)));
+  if (!ChromeContentBrowserClientExtensionsPart::
+          AreExtensionsDisabledForProfile(browser_context)) {
+    factories->emplace(
+        extensions::kExtensionScheme,
+        extensions::CreateExtensionNavigationURLLoaderFactory(
+            browser_context, ukm_source_id,
+            !!extensions::WebViewGuest::FromWebContents(web_contents)));
+  }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+
   Profile* profile = Profile::FromBrowserContext(browser_context);
+  // KeyedServices could be disabled based on the profile type, e.g. System
+  // Profile doesn't construct services by default.
+  if (AreKeyedServicesDisabledForProfileByDefault(profile))
+    return;
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   factories->emplace(content::kExternalFileScheme,
-                     chromeos::ExternalFileURLLoaderFactory::Create(
+                     ash::ExternalFileURLLoaderFactory::Create(
                          profile, content::ChildProcessHost::kInvalidUniqueID));
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 #if !BUILDFLAG(IS_ANDROID)
@@ -5451,6 +5466,9 @@ void ChromeContentBrowserClient::
   DCHECK(factories);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
+DCHECK(!ChromeContentBrowserClientExtensionsPart::
+           AreExtensionsDisabledForProfile(browser_context));
+
   factories->emplace(
       extensions::kExtensionScheme,
       extensions::CreateExtensionWorkerMainResourceURLLoaderFactory(
@@ -5465,7 +5483,22 @@ void ChromeContentBrowserClient::
   DCHECK(browser_context);
   DCHECK(factories);
 
+#if !BUILDFLAG(IS_ANDROID)
+  if (base::FeatureList::IsEnabled(features::kIsolatedWebApps) &&
+      !browser_context->ShutdownStarted()) {
+    factories->emplace(
+        chrome::kIsolatedAppScheme,
+        web_app::IsolatedWebAppURLLoaderFactory::CreateForServiceWorker(
+            browser_context));
+  }
+#endif  // !BUILDFLAG(IS_ANDROID)
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
+  if (ChromeContentBrowserClientExtensionsPart::AreExtensionsDisabledForProfile(
+        browser_context)) {
+  return;
+}
+
   factories->emplace(
       extensions::kExtensionScheme,
       extensions::CreateExtensionServiceWorkerScriptURLLoaderFactory(
@@ -5610,7 +5643,10 @@ void AddChromeSchemeFactories(
   // URL is chrome-search://remote-ntp. This is to allow the use of the NTP
   // public api and to embed most-visited tiles
   // (chrome-search://most-visited/title.html).
-  if (instant_service->IsInstantProcess(render_process_id)) {
+  //
+  // InstantService might be null for some irregular profiles, e.g. the System
+  // Profile.
+  if (instant_service && instant_service->IsInstantProcess(render_process_id)) {
     factories->emplace(
         chrome::kChromeSearchScheme,
         content::CreateWebUIURLLoaderFactory(
@@ -5677,41 +5713,57 @@ void ChromeContentBrowserClient::
   if (web_contents) {
     Profile* profile =
         Profile::FromBrowserContext(web_contents->GetBrowserContext());
-    factories->emplace(content::kExternalFileScheme,
-                       chromeos::ExternalFileURLLoaderFactory::Create(
-                           profile, render_process_id));
+    factories->emplace(
+         content::kExternalFileScheme,
+         ash::ExternalFileURLLoaderFactory::Create(profile, render_process_id));
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if !BUILDFLAG(IS_ANDROID)
-  if (base::FeatureList::IsEnabled(features::kIsolatedWebApps) &&
-      web_contents) {
-    if (auto* browser_context = web_contents->GetBrowserContext();
-        !browser_context->ShutdownStarted()) {
+  if (base::FeatureList::IsEnabled(features::kIsolatedWebApps)) {
+  content::BrowserContext* browser_context =
+      content::RenderProcessHost::FromID(render_process_id)
+          ->GetBrowserContext();
+  DCHECK(browser_context);
+  if (!browser_context->ShutdownStarted()) {
       // TODO(crbug.com/1365848): Only register the factory if we are already in
       // an isolated storage partition.
+
+      if (frame_host != nullptr) {
       factories->emplace(
           chrome::kIsolatedAppScheme,
           web_app::IsolatedWebAppURLLoaderFactory::Create(
               frame_host->GetFrameTreeNodeId(), browser_context));
+      } else {
+        factories->emplace(
+            chrome::kIsolatedAppScheme,
+            web_app::IsolatedWebAppURLLoaderFactory::CreateForServiceWorker(
+                browser_context));
+      }
     }
   }
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
+  content::BrowserContext* browser_context =
+      content::RenderProcessHost::FromID(render_process_id)
+          ->GetBrowserContext();
+  if (ChromeContentBrowserClientExtensionsPart::AreExtensionsDisabledForProfile(
+          browser_context))
+  return;
+
   factories->emplace(extensions::kExtensionScheme,
                      extensions::CreateExtensionURLLoaderFactory(
                          render_process_id, render_frame_id));
 
-  content::BrowserContext* browser_context =
-      content::RenderProcessHost::FromID(render_process_id)
-          ->GetBrowserContext();
   const extensions::Extension* extension = nullptr;
-
   if (request_initiator_origin != absl::nullopt) {
-    extension = extensions::ExtensionRegistry::Get(browser_context)
-                    ->enabled_extensions()
-                    .GetExtensionOrAppByURL(request_initiator_origin->GetURL());
+    extensions::ExtensionRegistry* registry =
+        extensions::ExtensionRegistry::Get(
+            Profile::FromBrowserContext(browser_context));
+    DCHECK(registry);
+    extension = registry->enabled_extensions().GetExtensionOrAppByURL(
+    request_initiator_origin->GetURL());
   }
 
   // For service worker contexts, we only allow file access. The remainder of
