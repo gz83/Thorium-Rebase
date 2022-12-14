@@ -48,6 +48,7 @@
 #include "chrome/installer/setup/setup_constants.h"
 #include "chrome/installer/setup/setup_util.h"
 #include "chrome/installer/setup/update_active_setup_version_work_item.h"
+#include "chrome/installer/util/app_command.h"
 #include "chrome/installer/util/callback_work_item.h"
 #include "chrome/installer/util/conditional_work_item_list.h"
 #include "chrome/installer/util/create_reg_key_work_item.h"
@@ -86,11 +87,11 @@ void AddInstallerCopyTasks(const InstallParams& install_params,
                            WorkItemList* install_list) {
   DCHECK(install_list);
 
-  const InstallerState& installer_state = install_params.installer_state;
-  const base::FilePath& setup_path = install_params.setup_path;
-  const base::FilePath& archive_path = install_params.archive_path;
-  const base::FilePath& temp_path = install_params.temp_path;
-  const base::Version& new_version = install_params.new_version;
+  const InstallerState& installer_state = *install_params.installer_state;
+  const base::FilePath& setup_path = *install_params.setup_path;
+  const base::FilePath& archive_path = *install_params.archive_path;
+  const base::FilePath& temp_path = *install_params.temp_path;
+  const base::Version& new_version = *install_params.new_version;
 
   base::FilePath installer_dir(
       installer_state.GetInstallerDirectory(new_version));
@@ -264,12 +265,12 @@ void ClosePreviousChromeProcess(const base::FilePath& target_path) {
 // Adds Chrome specific install work items to |install_list|.
 void AddChromeWorkItems(const InstallParams& install_params,
                         WorkItemList* install_list) {
-  const InstallerState& installer_state = install_params.installer_state;
-  const base::FilePath& archive_path = install_params.archive_path;
-  const base::FilePath& src_path = install_params.src_path;
-  const base::FilePath& temp_path = install_params.temp_path;
-  const base::Version& current_version = install_params.current_version;
-  const base::Version& new_version = install_params.new_version;
+  const InstallerState& installer_state = *install_params.installer_state;
+  const base::FilePath& archive_path = *install_params.archive_path;
+  const base::FilePath& src_path = *install_params.src_path;
+  const base::FilePath& temp_path = *install_params.temp_path;
+  const base::Version& current_version = *install_params.current_version;
+  const base::Version& new_version = *install_params.new_version;
 
   const base::FilePath& target_path = installer_state.target_path();
 
@@ -379,9 +380,6 @@ void AddEnterpriseEnrollmentWorkItems(const InstallerState& installer_state,
   if (!installer_state.system_install())
     return;
 
-  const HKEY root_key = installer_state.root_key();
-  const std::wstring cmd_key(GetCommandKey(kCmdStoreDMToken));
-
   // Register a command to allow Chrome to request Google Update to run
   // setup.exe --store-dmtoken=<token>, which will store the specified token
   // in the registry.
@@ -397,13 +395,14 @@ void AddEnterpriseEnrollmentWorkItems(const InstallerState& installer_state,
   // safety check for unsafe insert sequences since the right thing is
   // happening. Do not blindly copy this pattern in new code. Check with a
   // member of base/win/OWNERS if in doubt.
-  AppCommand cmd(cmd_line.GetCommandLineStringWithUnsafeInsertSequences());
+  AppCommand cmd(kCmdStoreDMToken,
+                 cmd_line.GetCommandLineStringWithUnsafeInsertSequences());
 
   // TODO(rogerta): For now setting this command as web accessible is required
   // by Google Update.  Could revisit this should Google Update change the
   // way permissions are handled for commands.
   cmd.set_is_web_accessible(true);
-  cmd.AddWorkItems(root_key, cmd_key, install_list);
+  cmd.AddCreateAppCommandWorkItems(installer_state.root_key(), install_list);
 }
 
 // Adds work items to add the "delete-dmtoken" command to Chrome's version key.
@@ -417,9 +416,6 @@ void AddEnterpriseUnenrollmentWorkItems(const InstallerState& installer_state,
   if (!installer_state.system_install())
     return;
 
-  const HKEY root_key = installer_state.root_key();
-  const std::wstring cmd_key(GetCommandKey(kCmdDeleteDMToken));
-
   // Register a command to allow Chrome to request Google Update to run
   // setup.exe --delete-dmtoken, which will delete any existing DMToken from the
   // registry.
@@ -429,13 +425,13 @@ void AddEnterpriseUnenrollmentWorkItems(const InstallerState& installer_state,
   cmd_line.AppendSwitch(switches::kSystemLevel);
   cmd_line.AppendSwitch(switches::kVerboseLogging);
   InstallUtil::AppendModeAndChannelSwitches(&cmd_line);
-  AppCommand cmd(cmd_line.GetCommandLineString());
+  AppCommand cmd(kCmdDeleteDMToken, cmd_line.GetCommandLineString());
 
   // TODO(rogerta): For now setting this command as web accessible is required
   // by Google Update.  Could revisit this should Google Update change the
   // way permissions are handled for commands.
   cmd.set_is_web_accessible(true);
-  cmd.AddWorkItems(root_key, cmd_key, install_list);
+  cmd.AddCreateAppCommandWorkItems(installer_state.root_key(), install_list);
 }
 
 // Adds work items to add the "rotate-dtkey" command to Chrome's version key.
@@ -447,9 +443,6 @@ void AddEnterpriseDeviceTrustWorkItems(const InstallerState& installer_state,
                                        WorkItemList* install_list) {
   if (!installer_state.system_install())
     return;
-
-  const HKEY root_key = installer_state.root_key();
-  const std::wstring cmd_key(GetCommandKey(kCmdRotateDeviceTrustKey));
 
   // Register a command to allow Chrome to request Google Update to run
   // setup.exe --rotate-dtkey=<dm-token>, which will rotate the key and store
@@ -468,13 +461,14 @@ void AddEnterpriseDeviceTrustWorkItems(const InstallerState& installer_state,
   // safety check for unsafe insert sequences since the right thing is
   // happening. Do not blindly copy this pattern in new code. Check with a
   // member of base/win/OWNERS if in doubt.
-  AppCommand cmd(cmd_line.GetCommandLineStringWithUnsafeInsertSequences());
+  AppCommand cmd(kCmdRotateDeviceTrustKey,
+                 cmd_line.GetCommandLineStringWithUnsafeInsertSequences());
 
   // TODO(rogerta): For now setting this command as web accessible is required
   // by Google Update.  Could revisit this should Google Update change the
   // way permissions are handled for commands.
   cmd.set_is_web_accessible(true);
-  cmd.AddWorkItems(root_key, cmd_key, install_list);
+  cmd.AddCreateAppCommandWorkItems(installer_state.root_key(), install_list);
 }
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
@@ -485,9 +479,9 @@ void AddEnterpriseDeviceTrustWorkItems(const InstallerState& installer_state,
 // state key if running under an MSI installer.
 void AddUninstallShortcutWorkItems(const InstallParams& install_params,
                                    WorkItemList* install_list) {
-  const InstallerState& installer_state = install_params.installer_state;
-  const base::FilePath& setup_path = install_params.setup_path;
-  const base::Version& new_version = install_params.new_version;
+  const InstallerState& installer_state = *install_params.installer_state;
+  const base::FilePath& setup_path = *install_params.setup_path;
+  const base::Version& new_version = *install_params.new_version;
 
   HKEY reg_root = installer_state.root_key();
 
@@ -585,7 +579,7 @@ void AddUninstallShortcutWorkItems(const InstallParams& install_params,
 // product version as the last step.
 void AddVersionKeyWorkItems(const InstallParams& install_params,
                             WorkItemList* list) {
-  const InstallerState& installer_state = install_params.installer_state;
+  const InstallerState& installer_state = *install_params.installer_state;
   const HKEY root = installer_state.root_key();
 
   // Only set "lang" for user-level installs since for system-level, the install
@@ -619,7 +613,7 @@ void AddVersionKeyWorkItems(const InstallParams& install_params,
   }
   list->AddSetRegValueWorkItem(
       root, clients_key, KEY_WOW64_32KEY, google_update::kRegVersionField,
-      ASCIIToWide(install_params.new_version.GetString()),
+      ASCIIToWide(install_params.new_version->GetString()),
       true);  // overwrite version
 }
 
@@ -665,12 +659,12 @@ bool AppendPostInstallTasks(const InstallParams& install_params,
                             WorkItemList* post_install_task_list) {
   DCHECK(post_install_task_list);
 
-  const InstallerState& installer_state = install_params.installer_state;
-  const base::FilePath& setup_path = install_params.setup_path;
-  const base::FilePath& src_path = install_params.src_path;
-  const base::FilePath& temp_path = install_params.temp_path;
-  const base::Version& current_version = install_params.current_version;
-  const base::Version& new_version = install_params.new_version;
+  const InstallerState& installer_state = *install_params.installer_state;
+  const base::FilePath& setup_path = *install_params.setup_path;
+  const base::FilePath& src_path = *install_params.src_path;
+  const base::FilePath& temp_path = *install_params.temp_path;
+  const base::Version& current_version = *install_params.current_version;
+  const base::Version& new_version = *install_params.new_version;
 
   HKEY root = installer_state.root_key();
   const base::FilePath& target_path = installer_state.target_path();
@@ -713,7 +707,7 @@ bool AppendPostInstallTasks(const InstallParams& install_params,
           google_update::kRegCriticalVersionField);
     }
 
-    // Form the mode-specific rename command.
+    // Form the mode-specific rename command and register it.
     base::CommandLine product_rename_cmd(installer_path);
     product_rename_cmd.AppendSwitch(switches::kRenameChromeExe);
     if (installer_state.system_install())
@@ -721,9 +715,25 @@ bool AppendPostInstallTasks(const InstallParams& install_params,
     if (installer_state.verbose_logging())
       product_rename_cmd.AppendSwitch(switches::kVerboseLogging);
     InstallUtil::AppendModeAndChannelSwitches(&product_rename_cmd);
-    in_use_update_work_items->AddSetRegValueWorkItem(
-        root, clients_key, KEY_WOW64_32KEY, google_update::kRegRenameCmdField,
-        product_rename_cmd.GetCommandLineString(), true);
+    AppCommand(installer::kCmdRenameChromeExe,
+               product_rename_cmd.GetCommandLineString())
+        .AddCreateAppCommandWorkItems(root, in_use_update_work_items.get());
+    // Some clients in Chrome 110 look for an alternate rename command id. Write
+    // that one as well so those can find it and be able to finish updating.
+    // TODO(floresa): Remove all uses of the alternate id in Chrome 111.
+    AppCommand(installer::kCmdAlternateRenameChromeExe,
+               product_rename_cmd.GetCommandLineString())
+        .AddCreateAppCommandWorkItems(root, in_use_update_work_items.get());
+
+    if (!installer_state.system_install()) {
+      // Chrome versions prior to 110.0.5435.0 still look for the User rename
+      // command line REG_SZ "cmd" under the path
+      // "Software\Google\Update\Clients\<guid>" where "<guid>" is the current
+      // install mode's appguid.
+      in_use_update_work_items->AddSetRegValueWorkItem(
+          root, clients_key, KEY_WOW64_32KEY, installer::kCmdRenameChromeExe,
+          product_rename_cmd.GetCommandLineString(), true);
+    }
 
     // Delay deploying the new chrome_proxy while chrome is running.
     in_use_update_work_items->AddCopyTreeWorkItem(
@@ -754,8 +764,15 @@ bool AppendPostInstallTasks(const InstallParams& install_params,
     regular_update_work_items->AddDeleteRegValueWorkItem(
         root, clients_key, KEY_WOW64_32KEY,
         google_update::kRegCriticalVersionField);
-    regular_update_work_items->AddDeleteRegValueWorkItem(
-        root, clients_key, KEY_WOW64_32KEY, google_update::kRegRenameCmdField);
+    AppCommand(installer::kCmdRenameChromeExe, {})
+        .AddDeleteAppCommandWorkItems(root, regular_update_work_items.get());
+    AppCommand(installer::kCmdAlternateRenameChromeExe, {})
+        .AddDeleteAppCommandWorkItems(root, regular_update_work_items.get());
+
+    if (!installer_state.system_install()) {
+      regular_update_work_items->AddDeleteRegValueWorkItem(
+          root, clients_key, KEY_WOW64_32KEY, installer::kCmdRenameChromeExe);
+    }
 
     // Only copy chrome_proxy.exe directly when chrome.exe isn't in use to avoid
     // different versions getting mixed up between the two binaries.
@@ -802,11 +819,11 @@ void AddInstallWorkItems(const InstallParams& install_params,
                          WorkItemList* install_list) {
   DCHECK(install_list);
 
-  const InstallerState& installer_state = install_params.installer_state;
-  const base::FilePath& setup_path = install_params.setup_path;
-  const base::FilePath& temp_path = install_params.temp_path;
-  const base::Version& current_version = install_params.current_version;
-  const base::Version& new_version = install_params.new_version;
+  const InstallerState& installer_state = *install_params.installer_state;
+  const base::FilePath& setup_path = *install_params.setup_path;
+  const base::FilePath& temp_path = *install_params.temp_path;
+  const base::Version& current_version = *install_params.current_version;
+  const base::Version& new_version = *install_params.new_version;
 
   const base::FilePath& target_path = installer_state.target_path();
 
@@ -1105,11 +1122,10 @@ void AddOsUpgradeWorkItems(const InstallerState& installer_state,
                            const base::Version& new_version,
                            WorkItemList* install_list) {
   const HKEY root_key = installer_state.root_key();
-  const std::wstring cmd_key(GetCommandKey(kCmdOnOsUpgrade));
 
   if (installer_state.operation() == InstallerState::UNINSTALL) {
-    install_list->AddDeleteRegKeyWorkItem(root_key, cmd_key, KEY_WOW64_32KEY)
-        ->set_log_message("Removing OS upgrade command");
+    AppCommand(kCmdOnOsUpgrade, {})
+        .AddDeleteAppCommandWorkItems(root_key, install_list);
   } else {
     // Register with Google Update to have setup.exe --on-os-upgrade called on
     // OS upgrade.
@@ -1124,9 +1140,9 @@ void AddOsUpgradeWorkItems(const InstallerState& installer_state,
     // Log everything for now.
     cmd_line.AppendSwitch(installer::switches::kVerboseLogging);
 
-    AppCommand cmd(cmd_line.GetCommandLineString());
+    AppCommand cmd(kCmdOnOsUpgrade, cmd_line.GetCommandLineString());
     cmd.set_is_auto_run_on_os_upgrade(true);
-    cmd.AddWorkItems(installer_state.root_key(), cmd_key, install_list);
+    cmd.AddCreateAppCommandWorkItems(root_key, install_list);
   }
 }
 
