@@ -222,6 +222,46 @@ void AddDeleteUninstallEntryForMSIWorkItems(
   delete_reg_key->set_best_effort(true);
 }
 
+// Filter for processes whose base name matches and whose path starts with a
+// specified prefix.
+class ProcessPathPrefixFilter : public base::ProcessFilter {
+ public:
+  explicit ProcessPathPrefixFilter(
+      const base::FilePath::StringPieceType& process_path_prefix)
+      : process_path_prefix_(process_path_prefix) {}
+
+  // base::ProcessFilter:
+  bool Includes(const base::ProcessEntry& entry) const override {
+    // Test if |entry|'s file path starts with the prefix we're looking for.
+    base::Process process(::OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION,
+                                        FALSE, entry.th32ProcessID));
+    if (!process.IsValid())
+      return false;
+
+    DWORD path_len = MAX_PATH;
+    wchar_t path_string[MAX_PATH];
+    if (::QueryFullProcessImageName(process.Handle(), 0, path_string,
+                                    &path_len)) {
+      base::FilePath file_path(path_string);
+      return base::StartsWith(file_path.value(), process_path_prefix_,
+                              base::CompareCase::INSENSITIVE_ASCII);
+    }
+    PLOG(WARNING) << "QueryFullProcessImageName failed for PID "
+                  << entry.th32ProcessID;
+    return false;
+  }
+
+ private:
+  const base::FilePath::StringPieceType process_path_prefix_;
+};
+
+// Gracefully closes previous Chrome process in |target_path|.
+void ClosePreviousChromeProcess(const base::FilePath& target_path) {
+  ProcessPathPrefixFilter target_path_filter(target_path.value());
+  base::CleanupProcesses(installer::kChromeExe, base::TimeDelta(),
+                         content::RESULT_CODE_NORMAL_EXIT, &target_path_filter);
+}
+
 // Adds Chrome specific install work items to |install_list|.
 void AddChromeWorkItems(const InstallParams& install_params,
                         WorkItemList* install_list) {
