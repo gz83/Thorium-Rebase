@@ -56,10 +56,9 @@ declare_args() {
 
   # Enables DTS/DTSX audio handling in chromium. This includes demuxing,
   # on-device decoding and bitstream passthrough as supported by device.
-  enable_platform_dts_audio = false
+  enable_platform_dts_audio = true
 
-  enable_mse_mpeg2ts_stream_parser =
-      proprietary_codecs && (enable_cast_receiver || use_fuzzing_engine)
+  enable_mse_mpeg2ts_stream_parser = true
 
   # Enable Dolby Vision demuxing. Enabled by default for Chromecast and Windows.
   # Actual decoding must be provided by the platform. Since most Dolby Vision
@@ -67,19 +66,17 @@ declare_args() {
   #
   # TODO(crbug.com/1336055): Revisit the default value for this setting as it
   # applies to video-capable devices.
-  enable_platform_dolby_vision =
-      proprietary_codecs && (is_cast_media_device || is_win)
+  enable_platform_dolby_vision = true
 
   # Enable platform support of encrypted Dolby Vision. The actual support
   # depends on platform capability and is controlled by the run time feature
   # kPlatformEncryptedDolbyVision. Clear Dolby Vision is not supported by
   # default, unless overwritten by the run time feature
   # kAllowClearDolbyVisionInMseWhenPlatformEncryptedDvEnabled.
-  enable_platform_encrypted_dolby_vision = proprietary_codecs && is_win
+  enable_platform_encrypted_dolby_vision = true
 
   # Enable HLS with SAMPLE-AES decryption.
-  enable_hls_sample_aes =
-      proprietary_codecs && (enable_cast_receiver || use_fuzzing_engine)
+  enable_hls_sample_aes = true
 
   # Enable logging override, e.g. enable DVLOGs through level 2 at build time.
   # On Cast devices, these are logged as INFO.
