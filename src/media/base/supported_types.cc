@@ -303,6 +303,7 @@ bool IsDefaultSupportedVideoType(const VideoType& type) {
     case VideoCodec::kH264:
     case VideoCodec::kVP8:
     case VideoCodec::kTheora:
+        case VideoCodec::kMPEG2:
       return true;
     case VideoCodec::kAV1:
       return IsAV1Supported(type);
@@ -314,7 +315,6 @@ bool IsDefaultSupportedVideoType(const VideoType& type) {
       return IsMPEG4Supported();
     case VideoCodec::kUnknown:
     case VideoCodec::kVC1:
-    case VideoCodec::kMPEG2:
     case VideoCodec::kDolbyVision:
       return false;
   }
@@ -341,13 +341,13 @@ bool IsDefaultSupportedAudioType(const AudioType& type) {
     case AudioCodec::kPCM_S24BE:
     case AudioCodec::kPCM_ALAW:
     case AudioCodec::kVorbis:
+        case AudioCodec::kEAC3:
+        case AudioCodec::kAC3:
       return true;
     case AudioCodec::kAMR_NB:
     case AudioCodec::kAMR_WB:
     case AudioCodec::kGSM_MS:
-    case AudioCodec::kEAC3:
     case AudioCodec::kALAC:
-    case AudioCodec::kAC3:
     case AudioCodec::kMpegHAudio:
     case AudioCodec::kUnknown:
       return false;
