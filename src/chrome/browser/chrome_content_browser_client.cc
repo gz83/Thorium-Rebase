@@ -3270,11 +3270,13 @@ bool ChromeContentBrowserClient::IsAttributionReportingOperationAllowed(
 
   switch (operation) {
     case AttributionReportingOperation::kSource:
+    case AttributionReportingOperation::kSourceVerboseDebugReport:
       DCHECK(source_origin);
       DCHECK(reporting_origin);
       return privacy_sandbox_settings->IsAttributionReportingAllowed(
           *source_origin, *reporting_origin);
     case AttributionReportingOperation::kTrigger:
+    case AttributionReportingOperation::kTriggerVerboseDebugReport:
       DCHECK(destination_origin);
       DCHECK(reporting_origin);
       return privacy_sandbox_settings->IsAttributionReportingAllowed(
@@ -3291,16 +3293,19 @@ bool ChromeContentBrowserClient::IsAttributionReportingOperationAllowed(
 }
 
 bool ChromeContentBrowserClient::IsSharedStorageAllowed(
-    content::BrowserContext* browser_context,
+    content::RenderFrameHost* rfh,
     const url::Origin& top_frame_origin,
     const url::Origin& accessing_origin) {
-  Profile* profile = Profile::FromBrowserContext(browser_context);
+  Profile* profile = Profile::FromBrowserContext(rfh->GetBrowserContext());
   auto* privacy_sandbox_settings =
       PrivacySandboxSettingsFactory::GetForProfile(profile);
   DCHECK(privacy_sandbox_settings);
-
-  return privacy_sandbox_settings->IsSharedStorageAllowed(top_frame_origin,
-                                                          accessing_origin);
+  bool allowed = privacy_sandbox_settings->IsSharedStorageAllowed(
+    top_frame_origin, accessing_origin);
+  content_settings::PageSpecificContentSettings::BrowsingDataAccessed(
+    rfh, blink::StorageKey(accessing_origin),
+    BrowsingDataModel::StorageType::kSharedStorage, !allowed);
+  return allowed;
 }
 
 bool ChromeContentBrowserClient::IsPrivateAggregationAllowed(
@@ -3402,7 +3407,13 @@ ChromeContentBrowserClient::GetGeneratedCodeCacheSettings(
 
 cert_verifier::mojom::CertVerifierServiceParamsPtr
 ChromeContentBrowserClient::GetCertVerifierServiceParams() {
-  return GetChromeCertVerifierServiceParams();
+  PrefService* local_state;
+  if (g_browser_process) {
+    local_state = g_browser_process->local_state();
+  } else {
+    local_state = startup_data_.chrome_feature_list_creator()->local_state();
+  }
+  return GetChromeCertVerifierServiceParams(local_state);
 }
 
 void ChromeContentBrowserClient::AllowCertificateError(
@@ -3803,12 +3814,17 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
 // Fill font preferences. These are not registered on Android
 // - http://crbug.com/308033, http://crbug.com/696364.
 #if !BUILDFLAG(IS_ANDROID)
+// Enabling the FontFamilyCache needs some KeyedService that might not be 
+// available for some irregular profiles, like the System Profile.
+if (!AreKeyedServicesDisabledForProfileByDefault(profile)) {
   FontFamilyCache::FillFontFamilyMap(profile,
                                      prefs::kWebKitStandardFontFamilyMap,
                                      &web_prefs->standard_font_family_map);
-  FontFamilyCache::FillFontFamilyMap(profile, prefs::kWebKitFixedFontFamilyMap,
+  FontFamilyCache::FillFontFamilyMap(profile,
+                                     prefs::kWebKitFixedFontFamilyMap,
                                      &web_prefs->fixed_font_family_map);
-  FontFamilyCache::FillFontFamilyMap(profile, prefs::kWebKitSerifFontFamilyMap,
+  FontFamilyCache::FillFontFamilyMap(profile,
+                                     prefs::kWebKitSerifFontFamilyMap,
                                      &web_prefs->serif_font_family_map);
   FontFamilyCache::FillFontFamilyMap(profile,
                                      prefs::kWebKitSansSerifFontFamilyMap,
@@ -3821,6 +3837,7 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
                                      &web_prefs->fantasy_font_family_map);
   FontFamilyCache::FillFontFamilyMap(profile, prefs::kWebKitMathFontFamilyMap,
                                      &web_prefs->math_font_family_map);
+}
 
   web_prefs->default_font_size =
       prefs->GetInteger(prefs::kWebKitDefaultFontSize);
@@ -3966,7 +3983,7 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
             web_app::WebAppProvider::GetForLocalAppsUnchecked(profile);
         const web_app::AppId& app_id = browser->app_controller()->app_id();
         const web_app::WebAppRegistrar& registrar =
-            web_app_provider->registrar();
+            web_app_provider->registrar_unsafe();
         if (registrar.IsLocallyInstalled(app_id))
           web_prefs->web_app_scope = registrar.GetAppScope(app_id);
 
@@ -4118,6 +4135,15 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
   // If the pref is not set, the default value (true) will be used:
   web_prefs->webxr_immersive_ar_allowed =
       prefs->GetBoolean(prefs::kWebXRImmersiveArEnabled);
+#endif
+
+#if BUILDFLAG(IS_FUCHSIA)
+  // Disable WebSQL support since it is being removed from the web platform
+  // and does not work. See crbug.com/1317431.
+  web_prefs->databases_enabled = false;
+
+  // TODO(crbug.com/1311019): Implement WebAuthn integration and remove.
+  web_prefs->disable_webauthn = true;
 #endif
 
   for (ChromeContentBrowserClientParts* parts : extra_parts_)
@@ -4301,6 +4327,17 @@ ChromeContentBrowserClient::GetVpnServiceProxy(
 #endif
 }
 
+#if BUILDFLAG(IS_CHROMEOS)
+content::FirewallHoleProxyFactory*
+ChromeContentBrowserClient::GetFirewallHoleProxyFactory() {
+  if (!firewall_hole_proxy_factory_) {
+    firewall_hole_proxy_factory_ =
+        std::make_unique<ChromeFirewallHoleProxyFactory>();
+  }
+  return firewall_hole_proxy_factory_.get();
+}
+#endif
+
 std::unique_ptr<ui::SelectFilePolicy>
 ChromeContentBrowserClient::CreateSelectFilePolicy(WebContents* web_contents) {
   return std::make_unique<ChromeSelectFilePolicy>(web_contents);
@@ -4339,10 +4376,10 @@ void ChromeContentBrowserClient::GetAdditionalFileSystemBackends(
   storage::ExternalMountPoints* external_mount_points =
       browser_context->GetMountPoints();
   DCHECK(external_mount_points);
-  auto backend = std::make_unique<chromeos::FileSystemBackend>(
+  auto backend = std::make_unique<ash::FileSystemBackend>(
       Profile::FromBrowserContext(browser_context),
       std::make_unique<ash::file_system_provider::BackendDelegate>(),
-      std::make_unique<chromeos::MTPFileSystemBackendDelegate>(
+      std::make_unique<ash::MTPFileSystemBackendDelegate>(
           storage_partition_path),
       std::make_unique<arc::ArcContentFileSystemBackendDelegate>(),
       std::make_unique<arc::ArcDocumentsProviderBackendDelegate>(),
@@ -4415,23 +4452,19 @@ void ChromeContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
   // deal with all other type of processes.
   std::string process_type =
       command_line.GetSwitchValueASCII(switches::kProcessType);
-  if (process_type != switches::kZygoteProcess)
-  {
+  if (process_type != switches::kZygoteProcess) {
     base::ScopedFD cros_startup_fd =
         chromeos::BrowserInitParams::CreateStartupData();
-    if (cros_startup_fd.is_valid())
-    {
+    if (cros_startup_fd.is_valid()) {
       constexpr int kStartupDataFD =
           kCrosStartupDataDescriptor + base::GlobalDescriptors::kBaseDescriptor;
       mappings->Transfer(kStartupDataFD, std::move(cros_startup_fd));
     }
 
-    if (chromeos::IsLaunchedWithPostLoginParams())
-    {
+    if (chromeos::IsLaunchedWithPostLoginParams()) {
       base::ScopedFD cros_postlogin_fd =
           chromeos::BrowserPostLoginParams::CreatePostLoginData();
-      if (cros_postlogin_fd.is_valid())
-      {
+      if (cros_postlogin_fd.is_valid()) {
         constexpr int kPostLoginDataFD =
             kCrosPostLoginDataDescriptor +
             base::GlobalDescriptors::kBaseDescriptor;
@@ -4439,15 +4472,14 @@ void ChromeContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
       }
     }
   }
-#endif // BUILDFLAG(IS_CHROMEOS_LACROS)
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 }
 #endif  // BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_MAC)
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 void ChromeContentBrowserClient::GetAdditionalMappedFilesForZygote(
-    base::CommandLine *command_line,
-    PosixFileDescriptorInfo *mappings)
-{
+    base::CommandLine* command_line,
+    PosixFileDescriptorInfo* mappings) {
   // Create the file descriptor for Cros startup data and pass it.
   // This FD will be used to obtain BrowserInitParams in Zygote process.
   // Note that this requires Mojo, but Mojo cannot be fully initialized this
@@ -4464,8 +4496,7 @@ void ChromeContentBrowserClient::GetAdditionalMappedFilesForZygote(
       chromeos::BrowserInitParams::CreateStartupData();
   mojo::core::ShutDown();
 
-  if (cros_startup_fd.is_valid())
-  {
+  if (cros_startup_fd.is_valid()) {
     constexpr int kStartupDataFD =
         kCrosStartupDataDescriptor + base::GlobalDescriptors::kBaseDescriptor;
     command_line->AppendSwitchASCII(chromeos::switches::kCrosStartupDataFD,
@@ -4473,7 +4504,7 @@ void ChromeContentBrowserClient::GetAdditionalMappedFilesForZygote(
     mappings->Transfer(kStartupDataFD, std::move(cros_startup_fd));
   }
 }
-#endif // BUILDFLAG(IS_CHROMEOS_LACROS)
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 #if BUILDFLAG(IS_WIN)
 std::wstring ChromeContentBrowserClient::GetAppContainerSidForSandboxType(
