@@ -474,10 +474,6 @@ int GetContentRestrictions(const Browser* browser) {
     CoreTabHelper* core_tab_helper =
         CoreTabHelper::FromWebContents(current_tab);
     content_restrictions = core_tab_helper->content_restrictions();
-    NavigationEntry* last_committed_entry =
-        current_tab->GetController().GetLastCommittedEntry();
-    if (!content::IsSavableURL(last_committed_entry->GetURL()))
-      content_restrictions |= CONTENT_RESTRICTION_SAVE;
   }
   return content_restrictions;
 }
