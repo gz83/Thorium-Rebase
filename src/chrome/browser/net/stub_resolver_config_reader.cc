@@ -161,7 +161,7 @@ StubResolverConfigReader::StubResolverConfigReader(PrefService* local_state,
       if (entries.count("dns-over-https@1")) {
         // The user has "Enabled" selected.
         local_state_->SetString(prefs::kDnsOverHttpsMode,
-                                SecureDnsConfig::kModeAutomatic);
+                                SecureDnsConfig::kModeSecure);
       } else if (entries.count("dns-over-https@2")) {
         // The user has "Disabled" selected.
         local_state_->SetString(prefs::kDnsOverHttpsMode,
@@ -356,22 +356,7 @@ SecureDnsConfig StubResolverConfigReader::GetAndUpdateConfiguration(
     check_parental_controls = false;
   }
 
-  // Check parental controls last because it can be expensive and should only be
-  // checked if necessary for the otherwise-determined mode.
   if (check_parental_controls) {
-    if (ShouldDisableDohForParentalControls()) {
-      forced_management_mode =
-          SecureDnsConfig::ManagementMode::kDisabledParentalControls;
-      secure_dns_mode = net::SecureDnsMode::kOff;
-      mode_details =
-          SecureDnsModeDetailsForHistogram::kOffByDetectedParentalControls;
-
-      // If parental controls had not previously been checked, need to update
-      // network service.
-      if (!parental_controls_checked_)
-        update_network_service = true;
-    }
-
     parental_controls_checked_ = true;
   }
 
