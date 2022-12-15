@@ -205,7 +205,7 @@ const base::FeatureParam<bool> kTabGroupsSaveSyncIntegration{
 BASE_FEATURE(kTabHoverCardImages,
              "TabHoverCardImages",
 #if BUILDFLAG(IS_MAC)
-             base::FEATURE_DISABLED_BY_DEFAULT
+             base::FEATURE_ENABLED_BY_DEFAULT
 #else
              base::FEATURE_ENABLED_BY_DEFAULT
 #endif
