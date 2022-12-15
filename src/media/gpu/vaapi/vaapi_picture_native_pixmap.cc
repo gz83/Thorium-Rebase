@@ -4,6 +4,7 @@
 
 #include "media/gpu/vaapi/vaapi_picture_native_pixmap.h"
 
+#include "media/gpu/macros.h"
 #include "media/gpu/vaapi/va_surface.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
 

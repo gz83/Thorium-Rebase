@@ -32,7 +32,6 @@ GbmPixmapWayland::GbmPixmapWayland(WaylandBufferManagerGpu* buffer_manager)
       buffer_id_(buffer_manager->AllocateBufferID()) {}
 
 GbmPixmapWayland::~GbmPixmapWayland() {
-  if (created_wl_buffer_)
   // gfx::BufferUsage::SCANOUT_VDA_WRITE doesn't result in creation of
   // wl_buffers.
   if (created_wl_buffer_ && usage_ != gfx::BufferUsage::SCANOUT_VDA_WRITE)
