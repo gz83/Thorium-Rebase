@@ -69,10 +69,8 @@ class CONTENT_EXPORT FileSystemAccessSafeMoveHelper {
   void DidFileDoQuarantine(
       const storage::FileSystemURL& target_url,
       const GURL& referrer_url,
-      mojo::Remote<quarantine::mojom::Quarantine> quarantine_remote,
       base::File::Error result);
   void DidAnnotateFile(
-    mojo::Remote<quarantine::mojom::Quarantine> quarantine_remote,
       quarantine::mojom::QuarantineFileResult result);
 
   void ComputeHashForSourceFile(HashCallback callback);

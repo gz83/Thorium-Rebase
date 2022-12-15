@@ -14,7 +14,6 @@
 #include "base/thread_annotations.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "components/services/quarantine/quarantine.h"
 #include "content/browser/file_system_access/features.h"
 #include "content/browser/file_system_access/file_system_access_error.h"
 #include "content/public/browser/content_browser_client.h"
@@ -288,22 +287,10 @@ void FileSystemAccessSafeMoveHelper::DidAfterWriteCheck(
   // not exist anymore. In case of error, the source file URL will point to a
   // valid filesystem location.
   base::OnceCallback<void(base::File::Error)> result_callback;
-  if (RequireQuarantine()) {
-  GURL referrer_url = manager_->is_off_the_record() ? GURL() : context_.url;
-  mojo::Remote<quarantine::mojom::Quarantine> quarantine_remote;
-  if (quarantine_connection_callback_) {
-    quarantine_connection_callback_.Run(
-        quarantine_remote.BindNewPipeAndPassReceiver());
-  }
-  result_callback =
-      base::BindOnce(&FileSystemAccessSafeMoveHelper::DidFileDoQuarantine,
-                     weak_factory_.GetWeakPtr(), dest_url(), referrer_url,
-                     std::move(quarantine_remote));
-} else {
     result_callback =
         base::BindOnce(&FileSystemAccessSafeMoveHelper::DidFileSkipQuarantine,
                        weak_factory_.GetWeakPtr());
-}
+
   manager_->DoFileSystemOperation(
       FROM_HERE, &storage::FileSystemOperationRunner::Move,
       std::move(result_callback), source_url(), dest_url(), options_,
@@ -320,7 +307,6 @@ void FileSystemAccessSafeMoveHelper::DidFileSkipQuarantine(
 void FileSystemAccessSafeMoveHelper::DidFileDoQuarantine(
     const storage::FileSystemURL& target_url,
     const GURL& referrer_url,
-    mojo::Remote<quarantine::mojom::Quarantine> quarantine_remote,
     base::File::Error result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -351,37 +337,9 @@ void FileSystemAccessSafeMoveHelper::DidFileDoQuarantine(
       referrer_url.is_valid() && referrer_url.SchemeIsHTTPOrHTTPS()
           ? referrer_url
           : GURL();
-
-  if (quarantine_remote) {
-  quarantine::mojom::Quarantine* raw_quarantine = quarantine_remote.get();
-  raw_quarantine->QuarantineFile(
-      target_url.path(), authority_url, referrer_url,
-      GetContentClient()
-          ->browser()
-          ->GetApplicationClientGUIDForQuarantineCheck(),
-      mojo::WrapCallbackWithDefaultInvokeIfNotRun(
-          base::BindOnce(&FileSystemAccessSafeMoveHelper::DidAnnotateFile,
-                         weak_factory_.GetWeakPtr(),
-                         std::move(quarantine_remote)),
-          quarantine::mojom::QuarantineFileResult::ANNOTATION_FAILED));
-} else {
-#if BUILDFLAG(IS_WIN)
-  base::ThreadPool::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::MayBlock()},
-      base::BindOnce(&quarantine::SetInternetZoneIdentifierDirectly,
-                     target_url.path(), authority_url, referrer_url),
-      base::BindOnce(&FileSystemAccessSafeMoveHelper::DidAnnotateFile,
-                     weak_factory_.GetWeakPtr(),
-                     std::move(quarantine_remote)));
-#else
-  DidAnnotateFile(std::move(quarantine_remote),
-                  quarantine::mojom::QuarantineFileResult::ANNOTATION_FAILED);
-#endif
-}
 }
 
 void FileSystemAccessSafeMoveHelper::DidAnnotateFile(
-  mojo::Remote<quarantine::mojom::Quarantine> quarantine_remote,
     quarantine::mojom::QuarantineFileResult result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 

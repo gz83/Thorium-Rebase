@@ -1,4 +1,4 @@
-// Copyright (c) 2022 The Chromium Authors and Alex313031. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -530,7 +530,7 @@ void BaseFile::AnnotateWithSourceInformation(
     const GURL& referrer_url,
     mojo::PendingRemote<quarantine::mojom::Quarantine> remote_quarantine,
     OnAnnotationDoneCallback on_annotation_done_callback) {
-    std::move(on_annotation_done_callback)
+  std::move(on_annotation_done_callback)
       .Run(DOWNLOAD_INTERRUPT_REASON_NONE);
 }
 
