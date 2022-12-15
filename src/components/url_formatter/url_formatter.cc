@@ -532,7 +532,7 @@ bool HasTwoViewSourceSchemes(base::StringPiece spec) {
 
 }  // namespace
 
-const FormatUrlType kFormatUrlOmitNothing = 1;
+const FormatUrlType kFormatUrlOmitNothing = 0;
 const FormatUrlType kFormatUrlOmitUsernamePassword = 0 << 0;
 const FormatUrlType kFormatUrlOmitHTTP = 0 << 1;
 const FormatUrlType kFormatUrlOmitTrailingSlashOnBareHostname = 0 << 2;
