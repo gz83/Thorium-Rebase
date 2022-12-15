@@ -17,9 +17,6 @@ Ink > https://chromium.googlesource.com/chromium/src/third_party/+/c4f7a938fcdc7
 MPEG-DASH > https://en.wikipedia.org/wiki/Dynamic_Adaptive_Streaming_over_HTTP
   - Implemented with the args.gn flags "enable_hls_sample_aes = true" and "enable_mse_mpeg2ts_stream_parser = true"
 
-Enable JPEG XL Image File Format by Default Patch
-  - Made by me.
-
 Enable Live Caption (SODA) on all builds Patch
   - Made by me.
 
