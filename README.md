@@ -27,7 +27,6 @@
 > - [DoH](https://en.wikipedia.org/wiki/DNS_over_HTTPS) (DNS over HTTPS) patches from Bromite.
 > - Enable [Do Not Track](https://allaboutdnt.com/) by default patch from Vanadium.
 > - Show full URLs including trailing slashes in address bar by default.
-> - Disable [FLOC](https://en.wikipedia.org/wiki/Federated_Learning_of_Cohorts) patch.
 > - Disable annoying Google API Key Infobar warning (you can still use API Keys to enable sync) from Ungoogled Chromium.
 > - Disable annoying Default Browser Infobar warning.
 > - Adds [DuckDuckGo](https://duckduckgo.com/), [Brave Search](https://search.brave.com/), [Ecosia](https://www.ecosia.org/), [Ask.com](https://www.ask.com/), and [Yandex.com](https://yandex.com/) in US and other locales, along with the normal search engines.
