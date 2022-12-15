@@ -348,18 +348,34 @@ void ToolbarView::Init() {
     side_panel_button_ = AddChildView(std::move(side_panel_button));
 
   avatar_ = AddChildView(std::make_unique<AvatarToolbarButton>(browser_view_));
+
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  const std::string flag_value =
+      command_line.GetSwitchValueASCII("show-avatar-button");
+
+  bool in_incognito_or_guest_mode = browser_->profile()->IsIncognitoProfile() ||
+                                    browser_->profile()->IsGuestSession();
+
   bool show_avatar_toolbar_button = true;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // ChromeOS only badges Incognito, Guest, and captive portal signin icons in
   // the browser window.
   show_avatar_toolbar_button =
-      browser_->profile()->IsIncognitoProfile() ||
-      browser_->profile()->IsGuestSession() ||
+      in_incognito_or_guest_mode ||
       (browser_->profile()->IsOffTheRecord() &&
        browser_->profile()->GetOTRProfileID().IsCaptivePortal());
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
   show_avatar_toolbar_button = !profiles::IsPublicSession();
 #endif
+
+  if (flag_value == "always")
+    show_avatar_toolbar_button = true;
+  else if (flag_value == "incognito-and-guest")
+    show_avatar_toolbar_button = in_incognito_or_guest_mode;
+  else if (flag_value == "never")
+    show_avatar_toolbar_button = false;
+
   avatar_->SetVisible(show_avatar_toolbar_button);
 
   auto app_menu_button = std::make_unique<BrowserAppMenuButton>(this);
