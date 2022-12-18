@@ -9,5 +9,4 @@
     <string name="bookmark_widget_title" translatable="false">Thorium Bookmarks</string>
     <string name="search_widget_title" translatable="false">Thorium Search</string>
     <string name="quick_action_search_widget_title" translatable="false">Thorium Quick Action Search</string>
-    <string name="dino_widget_title" translatable="false">Thorium Dino</string>
 </resources>

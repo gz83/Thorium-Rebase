@@ -344,6 +344,7 @@ if (current_toolchain == default_toolchain) {
       "//chrome/browser/touch_to_fill/android/internal:resource_provider_public_impl_java",
       "//components/externalauth/android:google_delegate_public_impl_java",
       "//components/language/android:ulp_delegate_public_java",
+      "//components/signin/public/android:account_email_domain_displayability_java",
     ]
   }
 
@@ -836,7 +837,6 @@ if (current_toolchain == default_toolchain) {
       "//chrome/browser/android/httpclient:java",
       "//chrome/browser/commerce/merchant_viewer/android:java",
       "//chrome/browser/content_creation/notes/internal/android:java",
-      "//chrome/browser/content_creation/reactions/internal/android:java",
       "//chrome/browser/download/internal/android:java",
       "//chrome/browser/page_annotations/android:java",
       "//chrome/browser/password_check:internal_java",
@@ -4023,7 +4023,6 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/infobar/PermissionInfoBar.java",
     "java/src/org/chromium/chrome/browser/infobar/ReaderModeInfoBar.java",
     "java/src/org/chromium/chrome/browser/infobar/SafetyTipInfoBar.java",
-    "java/src/org/chromium/chrome/browser/infobar/SurveyInfoBar.java",
     "java/src/org/chromium/chrome/browser/infobar/TranslateCompactInfoBar.java",
     "java/src/org/chromium/chrome/browser/init/NativeStartupBridge.java",
     "java/src/org/chromium/chrome/browser/javascript/WebContextFetcher.java",
