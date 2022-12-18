@@ -119,7 +119,7 @@ copyAVX2 () {
 	printf "\n" &&
 	printf "${YEL}Copying AVX2 build files...${c0}\n" &&
 	cp -r -v other/AVX2/build/config/* $HOME/chromium/src/build/config/ &&
-	cp -r -v other/AVX2/third_party/opus/src/* $HOME/chromium/src/third_party/opus/src/ &&
+	cp -r -v other/AVX2/third_party/opus/* $HOME/chromium/src/third_party/opus/ &&
 	printf "\n"
 }
 
@@ -154,7 +154,7 @@ alias gfetch='git fetch --tags' &&
 
 alias rebase='git rebase-update' &&
 
-alias gsync='gclient sync --with_branch_heads --with_tags -f -R -D' &&
+alias gsync='gclient sync -D' &&
 
 alias args='gn args out/thorium' &&
 
@@ -183,7 +183,7 @@ printf "alias ${YEL}gfetch${c0} = ${CYA}git fetch --tags${c0}\n" &&
 
 printf "alias ${YEL}rebase${c0} = ${CYA}git rebase-update${c0}\n" &&
 
-printf "alias ${YEL}gsync${c0} = ${CYA}gclient sync --with_branch_heads --with_tags -f -R -D${c0}\n" &&
+printf "alias ${YEL}gsync${c0} = ${CYA}gclient sync -D${c0}\n" &&
 
 printf "alias ${YEL}args${c0} = ${CYA}gn args out/thorium${c0}\n" &&
 
