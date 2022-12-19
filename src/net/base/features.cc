@@ -238,10 +238,6 @@ BASE_FEATURE(kCookieSameSiteConsidersRedirectChain,
              "CookieSameSiteConsidersRedirectChain",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kSamePartyCookiesConsideredFirstParty,
-             "SamePartyCookiesConsideredFirstParty",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 BASE_FEATURE(kSamePartyAttributeEnabled,
              "SamePartyAttributeEnabled",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -252,10 +248,6 @@ BASE_FEATURE(kPartitionedCookies,
 
 BASE_FEATURE(kNoncedPartitionedCookies,
              "NoncedPartitionedCookies",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kExtraCookieValidityChecks,
-             "ExtraCookieValidityChecks",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kRecordRadioWakeupTrigger,
