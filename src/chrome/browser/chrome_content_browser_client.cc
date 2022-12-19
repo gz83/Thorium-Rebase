@@ -336,6 +336,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/switches.h"
 #include "ui/native_theme/native_theme.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -449,7 +450,6 @@
 #include "chrome/browser/chromeos/tablet_mode/chrome_content_browser_client_tablet_mode_part.h"
 #include "chrome/browser/policy/networking/policy_cert_service.h"
 #include "chrome/browser/policy/networking/policy_cert_service_factory.h"
-#include "chrome/browser/renderer_host/pepper/chrome_firewall_hole_proxy.h"
 #include "chrome/common/chromeos/extensions/chromeos_system_extension_info.h"
 #include "chromeos/services/network_health/public/cpp/network_health_helper.h"
 #include "components/crash/core/app/breakpad_linux.h"
@@ -1546,6 +1546,10 @@ void ChromeContentBrowserClient::RegisterLocalStatePrefs(
       prefs::kThrottleNonVisibleCrossOriginIframesAllowed, true);
   registry->RegisterBooleanPref(prefs::kNewBaseUrlInheritanceBehaviorAllowed,
                                 true);
+  registry->RegisterBooleanPref(
+      policy::policy_prefs::kUseMojoVideoDecoderForPepperAllowed, true);
+  registry->RegisterBooleanPref(
+      policy::policy_prefs::kPPAPISharedImagesSwapChainAllowed, true);
 }
 
 // static
@@ -2941,6 +2945,21 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
                                     switches::kChangeStackGuardOnForkEnabled);
   }
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+  if (process_type != switches::kZygoteProcess) {
+    DCHECK(g_browser_process);
+    PrefService* local_state = g_browser_process->local_state();
+    DCHECK(local_state);
+    if (!local_state->GetBoolean(
+            policy::policy_prefs::kUseMojoVideoDecoderForPepperAllowed)) {
+      command_line->AppendSwitch(
+          ::switches::kDisableUseMojoVideoDecoderForPepper);
+    }
+    if (!local_state->GetBoolean(
+            policy::policy_prefs::kPPAPISharedImagesSwapChainAllowed)) {
+      command_line->AppendSwitch(
+          ::switches::kDisablePPAPISharedImagesSwapChain);
+    }
+  }
 }
 
 std::string
@@ -3256,6 +3275,11 @@ bool ChromeContentBrowserClient::IsInterestGroupAPIAllowed(
         render_frame_host, api_origin, !allowed);
   }
 
+  content_settings::PageSpecificContentSettings::BrowsingDataAccessed(
+      render_frame_host,
+      content::InterestGroupManager::InterestGroupDataKey{api_origin,
+                                                          top_frame_origin},
+      BrowsingDataModel::StorageType::kInterestGroup, !allowed);
   return allowed;
 }
 
@@ -3297,18 +3321,21 @@ bool ChromeContentBrowserClient::IsAttributionReportingOperationAllowed(
 }
 
 bool ChromeContentBrowserClient::IsSharedStorageAllowed(
+    content::BrowserContext* browser_context,
     content::RenderFrameHost* rfh,
     const url::Origin& top_frame_origin,
     const url::Origin& accessing_origin) {
-  Profile* profile = Profile::FromBrowserContext(rfh->GetBrowserContext());
+  Profile* profile = Profile::FromBrowserContext(browser_context);
   auto* privacy_sandbox_settings =
       PrivacySandboxSettingsFactory::GetForProfile(profile);
   DCHECK(privacy_sandbox_settings);
   bool allowed = privacy_sandbox_settings->IsSharedStorageAllowed(
     top_frame_origin, accessing_origin);
-  content_settings::PageSpecificContentSettings::BrowsingDataAccessed(
-    rfh, blink::StorageKey(accessing_origin),
-    BrowsingDataModel::StorageType::kSharedStorage, !allowed);
+  if (rfh) {
+    content_settings::PageSpecificContentSettings::BrowsingDataAccessed(
+        rfh, blink::StorageKey(accessing_origin),
+        BrowsingDataModel::StorageType::kSharedStorage, !allowed);
+  }
   return allowed;
 }
 
@@ -4331,17 +4358,6 @@ ChromeContentBrowserClient::GetVpnServiceProxy(
 #endif
 }
 
-#if BUILDFLAG(IS_CHROMEOS)
-content::FirewallHoleProxyFactory*
-ChromeContentBrowserClient::GetFirewallHoleProxyFactory() {
-  if (!firewall_hole_proxy_factory_) {
-    firewall_hole_proxy_factory_ =
-        std::make_unique<ChromeFirewallHoleProxyFactory>();
-  }
-  return firewall_hole_proxy_factory_.get();
-}
-#endif
-
 std::unique_ptr<ui::SelectFilePolicy>
 ChromeContentBrowserClient::CreateSelectFilePolicy(WebContents* web_contents) {
   return std::make_unique<ChromeSelectFilePolicy>(web_contents);
@@ -5128,15 +5144,15 @@ void ChromeContentBrowserClient::UpdateDevToolsBackgroundServiceExpiration(
   auto* pref_service = profile->GetPrefs();
   DCHECK(pref_service);
 
-  DictionaryPrefUpdate pref_update(
+  ScopedDictPrefUpdate pref_update(
       pref_service, prefs::kDevToolsBackgroundServicesExpirationDict);
-  base::Value* exp_dict = pref_update.Get();
+  base::Value::Dict& exp_dict = pref_update.Get();
 
   // Convert |expiration_time| to minutes since that is the most granular
   // option that returns an int. base::Value does not accept int64.
   int expiration_time_minutes =
       expiration_time.ToDeltaSinceWindowsEpoch().InMinutes();
-  exp_dict->SetIntKey(base::NumberToString(service), expiration_time_minutes);
+  exp_dict.Set(base::NumberToString(service), expiration_time_minutes);
 }
 
 base::flat_map<int, base::Time>
@@ -6757,6 +6773,7 @@ bool ChromeContentBrowserClient::ArePersistentMediaDeviceIDsAllowed(
              Profile::FromBrowserContext(browser_context))
       ->IsFullCookieAccessAllowed(
           url, site_for_cookies, top_frame_origin,
+          net::CookieSettingOverrides(),
           content_settings::CookieSettings::QueryReason::kSiteStorage);
 }
 
