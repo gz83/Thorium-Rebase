@@ -1183,10 +1183,6 @@ int GetMaxUnthrottledTimeoutNestingLevel() {
   return kMaxUnthrottledTimeoutNestingLevelParam.Get();
 }
 
-BASE_FEATURE(kTabSwitchMetrics2,
-             "TabSwitchMetrics2",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Enables reporting and web-exposure (respectively) of the time the first frame
 // of an animated image was painted.
 BASE_FEATURE(kLCPAnimatedImagesReporting,
@@ -1675,5 +1671,8 @@ BASE_FEATURE(kSpeculationRulesPrefetchFuture,
              "SpeculationRulesPrefetchFuture",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+BASE_FEATURE(kAllowPageWithIDBConnectionInBFCache,
+             "AllowPageWithIDBConnectionInBFCache",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 }  // namespace features
 }  // namespace blink
