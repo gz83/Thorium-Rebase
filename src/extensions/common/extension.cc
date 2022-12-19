@@ -254,12 +254,6 @@ scoped_refptr<Extension> Extension::Create(const base::FilePath& path,
     return nullptr;
   }
 
-  if ((flags & FROM_BOOKMARK) != 0) {
-    // Extension-based bookmark apps are no longer supported.
-    // They have been replaced by web apps.
-    return nullptr;
-  }
-
   std::unique_ptr<extensions::Manifest> manifest;
   if (flags & FOR_LOGIN_SCREEN) {
     manifest = Manifest::CreateManifestForLoginScreen(location, value.Clone(),
@@ -867,6 +861,6 @@ ExtensionInfo::ExtensionInfo(const base::Value::Dict* manifest,
     extension_manifest = std::make_unique<base::Value::Dict>(manifest->Clone());
 }
 
-ExtensionInfo::~ExtensionInfo() {}
+ExtensionInfo::~ExtensionInfo() = default;
 
 }   // namespace extensions
