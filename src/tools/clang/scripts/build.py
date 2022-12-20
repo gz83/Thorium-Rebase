@@ -89,10 +89,6 @@ def RunCommand(command, msvc_arch=None, env=None, fail_hard=True):
      True, exit on failure.  If msvc_arch is set, runs the command in a
      shell with the msvc tools for that architecture."""
 
-  if msvc_arch and sys.platform == 'win32':
-    command = [os.path.join(GetWinSDKDir(), 'bin', 'SetEnv.cmd'),
-               "/" + msvc_arch, '&&'] + command
-
   # https://docs.python.org/2/library/subprocess.html:
   # "On Unix with shell=True [...] if args is a sequence, the first item
   # specifies the command string, and any additional items will be treated as
@@ -962,7 +958,7 @@ def main():
   if args.bolt:
     ldflags += ['-Wl,--emit-relocs', '-Wl,-znow']
 
-  default_tools = ['plugins', 'blink_gc_plugin', 'translation_unit']
+  default_tools = []
   chrome_tools = list(set(default_tools + args.extra_tools))
   if cc is not None:  base_cmake_args.append('-DCMAKE_C_COMPILER=' + cc)
   if cxx is not None: base_cmake_args.append('-DCMAKE_CXX_COMPILER=' + cxx)
